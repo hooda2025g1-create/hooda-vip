@@ -1,42 +1,672 @@
-// متغيرات للتحكم في التنفيذ
+// =============================================
+// 1. إعدادات النظام والمتغيرات
+// =============================================
 let isRunning = false;
 let executionTimeout = null;
 
+// =============================================
+// 2. مكتبة الأمثلة الكاملة (15 مثال)
+// =============================================
+const examplesLibrary = [
+    {
+        id: 1,
+        title: "أساسيات الجمع والطرح",
+        description: "عمليات حسابية بسيطة للمبتدئين",
+        category: "مبتدئ",
+        tags: ["حساب", "مبتدئ"],
+        level: "beginner",
+        code: `// العمليات الحسابية الأساسية
+console.log("الجمع: 10 + 5 =", 10 + 5);
+console.log("الطرح: 10 - 5 =", 10 - 5);
+console.log("الضرب: 10 * 5 =", 10 * 5);
+console.log("القسمة: 10 / 5 =", 10 / 5);
+console.log("الباقي: 10 % 3 =", 10 % 3);`
+    },
+    {
+        id: 2,
+        title: "المتغيرات وأنواع البيانات",
+        description: "تعريف واستخدام المتغيرات",
+        category: "مبتدئ",
+        tags: ["متغيرات", "أنواع"],
+        level: "beginner",
+        code: `// تعريف المتغيرات
+let name = "أحمد";
+const age = 25;
+var city = "القاهرة";
+
+console.log("الاسم:", name);
+console.log("العمر:", age);
+console.log("المدينة:", city);
+
+// أنواع البيانات
+let number = 100;
+let text = "مرحباً";
+let isStudent = true;
+let fruits = ["تفاح", "موز", "برتقال"];
+let person = { name: "سارة", age: 30 };
+
+console.log("نوع الرقم:", typeof number);
+console.log("نوع النص:", typeof text);
+console.log("نوع المصفوفة:", typeof fruits);`
+    },
+    {
+        id: 3,
+        title: "الدوال البسيطة",
+        description: "إنشاء واستدعاء الدوال",
+        category: "مبتدئ",
+        tags: ["دوال", "برمجة"],
+        level: "beginner",
+        code: `// دالة بسيطة
+function greet(name) {
+    return "مرحباً " + name + "!";
+}
+
+console.log(greet("محمد"));
+console.log(greet("سارة"));
+
+// دالة حسابية
+function square(x) {
+    return x * x;
+}
+
+console.log("مربع 8 هو:", square(8));
+console.log("مربع 12 هو:", square(12));`
+    },
+    {
+        id: 4,
+        title: "المصفوفات الأساسية",
+        description: "التعامل مع المصفوفات",
+        category: "مبتدئ",
+        tags: ["مصفوفات", "بيانات"],
+        level: "beginner",
+        code: `// إنشاء مصفوفة
+let fruits = ["تفاح", "موز", "برتقال", "فراولة"];
+
+console.log("المصفوفة:", fruits);
+console.log("الطول:", fruits.length);
+console.log("العنصر الأول:", fruits[0]);
+
+// إضافة وإزالة
+fruits.push("مانجو");
+console.log("بعد إضافة مانجو:", fruits);
+
+fruits.pop();
+console.log("بعد إزالة آخر عنصر:", fruits);
+
+// التكرار
+console.log("عرض جميع الفواكه:");
+for(let i = 0; i < fruits.length; i++) {
+    console.log(i + 1 + ". " + fruits[i]);
+}`
+    },
+    {
+        id: 5,
+        title: "الشروط الأساسية",
+        description: "استخدام if و else",
+        category: "مبتدئ",
+        tags: ["شروط", "منطق"],
+        level: "beginner",
+        code: `// if بسيط
+let age = 20;
+
+if (age >= 18) {
+    console.log("يمكنك التصويت");
+} else {
+    console.log("لا يمكنك التصويت");
+}
+
+// else if
+let score = 85;
+
+if (score >= 90) {
+    console.log("ممتاز - A");
+} else if (score >= 80) {
+    console.log("جيد جداً - B");
+} else if (score >= 70) {
+    console.log("جيد - C");
+} else {
+    console.log("يحتاج تحسين");
+}
+
+// Ternary Operator
+let temperature = 25;
+let weather = temperature > 30 ? "حار" : "معتدل";
+console.log("الجو:", weather);`
+    },
+    {
+        id: 6,
+        title: "الحلقات Loops",
+        description: "استخدام for و while",
+        category: "مبتدئ",
+        tags: ["حلقات", "تكرار"],
+        level: "beginner",
+        code: `// for loop
+console.log("الأرقام من 1 إلى 5:");
+for(let i = 1; i <= 5; i++) {
+    console.log("رقم:", i);
+}
+
+// while loop
+console.log("العد التنازلي:");
+let count = 5;
+while(count > 0) {
+    console.log(count);
+    count--;
+}
+
+// for...of مع المصفوفات
+let fruits = ["تفاح", "موز", "برتقال"];
+console.log("عرض الفواكه:");
+for(let fruit of fruits) {
+    console.log("فاكهة:", fruit);
+}
+
+// break و continue
+console.log("الأرقام من 1 إلى 10 (تخطي 5):");
+for(let i = 1; i <= 10; i++) {
+    if(i === 5) continue;
+    console.log(i);
+}`
+    },
+    {
+        id: 7,
+        title: "الكائنات Objects",
+        description: "إنشاء واستخدام الكائنات",
+        category: "متوسط",
+        tags: ["كائنات", "بيانات"],
+        level: "intermediate",
+        code: `// إنشاء كائن
+let person = {
+    name: "أحمد",
+    age: 30,
+    city: "الإسكندرية",
+    isStudent: false,
+    
+    // دالة داخل الكائن
+    greet: function() {
+        return "مرحباً، أنا " + this.name;
+    }
+};
+
+console.log("الكائن:", person);
+console.log("الاسم:", person.name);
+console.log("العمر:", person['age']);
+console.log(person.greet());
+
+// إضافة خصائص جديدة
+person.email = "ahmed@example.com";
+console.log("بعد إضافة الإيميل:", person);
+
+// التكرار على الخصائص
+console.log("خصائص الكائن:");
+for(let key in person) {
+    if(typeof person[key] !== 'function') {
+        console.log(key + ": " + person[key]);
+    }
+}`
+    },
+    {
+        id: 8,
+        title: "الدوال المتقدمة",
+        description: "الدوال مع معاملات ودوال السهم",
+        category: "متوسط",
+        tags: ["دوال", "متقدم"],
+        level: "intermediate",
+        code: `// دالة مع معاملات متعددة
+function calculate(num1, num2, operation) {
+    switch(operation) {
+        case '+':
+            return num1 + num2;
+        case '-':
+            return num1 - num2;
+        case '*':
+            return num1 * num2;
+        case '/':
+            if(num2 === 0) return "لا يمكن القسمة على صفر";
+            return num1 / num2;
+        default:
+            return "عملية غير صحيحة";
+    }
+}
+
+console.log("10 + 5 =", calculate(10, 5, '+'));
+console.log("10 * 5 =", calculate(10, 5, '*'));
+
+// دالة السهم (Arrow Function)
+const square = (x) => x * x;
+console.log("مربع 9 هو:", square(9));
+
+const sumArray = (arr) => {
+    let total = 0;
+    for(let num of arr) {
+        total += num;
+    }
+    return total;
+};
+
+console.log("مجموع [1,2,3,4,5] هو:", sumArray([1,2,3,4,5]));
+
+// دالة مع قيمة افتراضية
+function greet(name = "زائر") {
+    return "أهلاً وسهلاً " + name;
+}
+
+console.log(greet("محمود"));
+console.log(greet());`
+    },
+    {
+        id: 9,
+        title: "المصفوفات المتقدمة",
+        description: "الدوال المدمجة في المصفوفات",
+        category: "متوسط",
+        tags: ["مصفوفات", "متقدم"],
+        level: "intermediate",
+        code: `let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// map - تحويل المصفوفة
+let squares = numbers.map(num => num * num);
+console.log("مربعات الأرقام:", squares);
+
+// filter - تصفية المصفوفة
+let evenNumbers = numbers.filter(num => num % 2 === 0);
+console.log("الأرقام الزوجية:", evenNumbers);
+
+// reduce - جمع المصفوفة
+let sum = numbers.reduce((total, num) => total + num, 0);
+console.log("مجموع الأرقام:", sum);
+
+// find - البحث في المصفوفة
+let found = numbers.find(num => num > 5);
+console.log("أول رقم أكبر من 5:", found);
+
+// sort - ترتيب المصفوفة
+let randomNumbers = [3, 1, 4, 1, 5, 9, 2, 6];
+let sorted = randomNumbers.sort((a, b) => a - b);
+console.log("الأرقام المرتبة:", sorted);`
+    },
+    {
+        id: 10,
+        title: "التعامل مع النصوص",
+        description: "الدوال المدمجة في النصوص",
+        category: "متوسط",
+        tags: ["نصوص", "معالجة"],
+        level: "intermediate",
+        code: `let text = "مرحباً بك في عالم JavaScript";
+
+console.log("طول النص:", text.length);
+console.log("أحرف كبيرة:", text.toUpperCase());
+console.log("أحرف صغيرة:", text.toLowerCase());
+console.log("هل يحتوي على 'JavaScript'؟", text.includes("JavaScript"));
+console.log("موقع كلمة 'عالم':", text.indexOf("عالم"));
+
+// تقسيم النص
+let words = text.split(" ");
+console.log("الكلمات:", words);
+console.log("عدد الكلمات:", words.length);
+
+// استبدال النص
+let newText = text.replace("JavaScript", "البرمجة");
+console.log("النص الجديد:", newText);
+
+// أخذ جزء من النص
+console.log("الأول 7 أحرف:", text.substring(0, 7));`
+    },
+    {
+        id: 11,
+        title: "التاريخ والوقت",
+        description: "التعامل مع Date object",
+        category: "متوسط",
+        tags: ["تاريخ", "وقت"],
+        level: "intermediate",
+        code: `// التاريخ الحالي
+let now = new Date();
+console.log("التاريخ الكامل:", now);
+console.log("السنة:", now.getFullYear());
+console.log("الشهر:", now.getMonth() + 1);
+console.log("اليوم:", now.getDate());
+console.log("الساعة:", now.getHours());
+console.log("الدقائق:", now.getMinutes());
+console.log("الثواني:", now.getSeconds());
+
+// تنسيق التاريخ
+let options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+};
+console.log("التاريخ المنسق:", now.toLocaleDateString('ar-SA', options));
+
+// حساب الفرق بين تاريخين
+let date1 = new Date(2024, 0, 1);
+let date2 = new Date(2024, 11, 31);
+let difference = date2 - date1;
+let days = Math.floor(difference / (1000 * 60 * 60 * 24));
+console.log("عدد الأيام بين 1 يناير و31 ديسمبر 2024:", days);`
+    },
+    {
+        id: 12,
+        title: "معالجة الأخطاء",
+        description: "try...catch و throw",
+        category: "متقدم",
+        tags: ["أخطاء", "معالجة"],
+        level: "advanced",
+        code: `// try...catch الأساسي
+try {
+    console.log("بداية البرنامج");
+    let result = 10 / 2;
+    console.log("نتيجة القسمة:", result);
+    
+    // خطأ متعمد
+    let x = y + 5;
+    
+} catch(error) {
+    console.log("حدث خطأ!");
+    console.log("الرسالة:", error.message);
+}
+
+console.log("البرنامج مستمر...");
+
+// throw - خطأ مخصص
+function divide(a, b) {
+    if(b === 0) {
+        throw new Error("لا يمكن القسمة على صفر");
+    }
+    return a / b;
+}
+
+try {
+    console.log("10 / 2 =", divide(10, 2));
+    console.log("10 / 0 =", divide(10, 0));
+} catch(error) {
+    console.log("خطأ في القسمة:", error.message);
+}`
+    },
+    {
+        id: 13,
+        title: "الوعود Promises",
+        description: "التعامل مع العمليات غير المتزامنة",
+        category: "متقدم",
+        tags: ["Promises", "غير متزامن"],
+        level: "advanced",
+        code: `// إنشاء Promise
+let promise = new Promise((resolve, reject) => {
+    console.log("جاري تنفيذ العملية...");
+    
+    setTimeout(() => {
+        let success = Math.random() > 0.5;
+        
+        if(success) {
+            resolve("تمت العملية بنجاح!");
+        } else {
+            reject("فشلت العملية");
+        }
+    }, 2000);
+});
+
+// استخدام Promise
+promise
+    .then(result => {
+        console.log("النتيجة:", result);
+    })
+    .catch(error => {
+        console.log("خطأ:", error);
+    })
+    .finally(() => {
+        console.log("انتهت العملية");
+    });`
+    },
+    {
+        id: 14,
+        title: "الفئات Classes",
+        description: "البرمجة الكائنية في JavaScript",
+        category: "متقدم",
+        tags: ["Classes", "OOP"],
+        level: "advanced",
+        code: `// تعريف class
+class Person {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+    
+    greet() {
+        return "مرحباً، أنا " + this.name + " وعمري " + this.age;
+    }
+}
+
+// إنشاء كائن
+let person1 = new Person("أحمد", 25);
+console.log("الكائن:", person1);
+console.log(person1.greet());
+
+// الوراثة
+class Student extends Person {
+    constructor(name, age, major) {
+        super(name, age);
+        this.major = major;
+    }
+    
+    study() {
+        return "أدرس " + this.major;
+    }
+}
+
+// إنشاء طالب
+let student = new Student("سارة", 20, "علوم حاسب");
+console.log("\\nالطالب:", student);
+console.log(student.greet());
+console.log(student.study());`
+    },
+    {
+        id: 15,
+        title: "حاسبة متكاملة",
+        description: "مشروع كامل مع واجهة برمجة",
+        category: "مشروع",
+        tags: ["مشروع", "حاسبة", "كامل"],
+        level: "advanced",
+        code: `// حاسبة متكاملة
+class Calculator {
+    constructor() {
+        this.history = [];
+    }
+    
+    add(a, b) {
+        const result = a + b;
+        this.history.push(a + " + " + b + " = " + result);
+        return result;
+    }
+    
+    subtract(a, b) {
+        const result = a - b;
+        this.history.push(a + " - " + b + " = " + result);
+        return result;
+    }
+    
+    multiply(a, b) {
+        const result = a * b;
+        this.history.push(a + " × " + b + " = " + result);
+        return result;
+    }
+    
+    divide(a, b) {
+        if(b === 0) {
+            throw new Error("لا يمكن القسمة على صفر");
+        }
+        const result = a / b;
+        this.history.push(a + " ÷ " + b + " = " + result);
+        return result;
+    }
+    
+    getHistory() {
+        return this.history;
+    }
+}
+
+// اختبار الحاسبة
+console.log("=== حاسبة متكاملة ===");
+const calc = new Calculator();
+
+try {
+    console.log("10 + 5 =", calc.add(10, 5));
+    console.log("10 - 5 =", calc.subtract(10, 5));
+    console.log("10 × 5 =", calc.multiply(10, 5));
+    console.log("10 ÷ 5 =", calc.divide(10, 5));
+    
+    console.log("\\nسجل العمليات:");
+    calc.getHistory().forEach((operation, index) => {
+        console.log(index + 1 + ". " + operation);
+    });
+    
+} catch(error) {
+    console.log("\\nخطأ:", error.message);
+}`
+    }
+];
+
+// =============================================
+// 3. وظائف النظام الأساسية
+// =============================================
+
 // عند تحميل الصفحة
 window.addEventListener('load', function() {
-    // ضبط حجم محرر الكود تلقائياً
-    adjustEditorSize();
+    console.log("✅ مشغل JavaScript جاهز!");
     
-    // إضافة مستمع لحجم النافذة
+    // ضبط حجم المحرر
+    adjustEditorSize();
     window.addEventListener('resize', adjustEditorSize);
     
-    // إضافة مثال كود عشوائي عند النقر على مثال
+    // إعداد النقر على الأمثلة
+    setupExampleClick();
+    
+    // استرجاع الكود المحفوظ
+    loadSavedCode();
+});
+
+// ضبط حجم المحرر
+function adjustEditorSize() {
+    const editor = document.getElementById('code-input');
+    const output = document.getElementById('output');
+    
+    if (window.innerWidth < 768) {
+        editor.style.minHeight = '300px';
+        output.style.minHeight = '300px';
+    } else {
+        const availableHeight = window.innerHeight - 200;
+        editor.style.minHeight = availableHeight + 'px';
+        output.style.minHeight = availableHeight + 'px';
+    }
+}
+
+// إعداد النقر على الأمثلة
+function setupExampleClick() {
     document.querySelectorAll('.example-code pre').forEach(pre => {
         pre.style.cursor = 'pointer';
         pre.addEventListener('click', function() {
             const exampleCode = this.textContent;
             document.getElementById('code-input').value = exampleCode;
             showMessage('تم نسخ المثال إلى المحرر', 'success');
+            
+            // أنيميشن
+            this.classList.add('pulse');
+            setTimeout(() => this.classList.remove('pulse'), 300);
         });
     });
-});
+}
 
-// ضبط حجم المحرر حسب الشاشة
-function adjustEditorSize() {
-    const editor = document.getElementById('code-input');
-    const output = document.getElementById('output');
+// =============================================
+// 4. وظائف نافذة الأمثلة
+// =============================================
+
+// فتح نافذة الأمثلة
+function openExamplesModal() {
+    console.log("فتح نافذة الأمثلة...");
     
-    if (window.innerWidth < 768) {
-        // للهواتف
-        editor.style.minHeight = '300px';
-        output.style.minHeight = '300px';
-    } else {
-        // للكمبيوتر والتابلت
-        const availableHeight = window.innerHeight - 200;
-        editor.style.minHeight = availableHeight + 'px';
-        output.style.minHeight = availableHeight + 'px';
+    const modal = document.getElementById('examplesModal');
+    const container = document.getElementById('examplesContainer');
+    
+    if (!modal) {
+        showMessage("حدث خطأ في فتح الأمثلة", "error");
+        return;
+    }
+    
+    // تعبئة الأمثلة
+    container.innerHTML = '';
+    examplesLibrary.forEach(example => {
+        const card = document.createElement('div');
+        card.className = 'example-card';
+        card.innerHTML = `
+            <h4><i class="fas fa-code"></i> ${example.title}</h4>
+            <p>${example.description}</p>
+            <div class="example-tags">
+                <span class="tag ${example.level}">${example.category}</span>
+                ${example.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+        `;
+        
+        card.addEventListener('click', () => {
+            selectExample(example);
+        });
+        
+        container.appendChild(card);
+    });
+    
+    // إظهار النافذة
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // أنيميشن
+    modal.classList.add('fade-in');
+}
+
+// إغلاق نافذة الأمثلة
+function closeExamplesModal() {
+    const modal = document.getElementById('examplesModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 }
+
+// اختيار مثال
+function selectExample(example) {
+    document.getElementById('code-input').value = example.code;
+    closeExamplesModal();
+    showMessage(`تم تحميل مثال: ${example.title}`, 'success');
+    
+    // أنيميشن للمحرر
+    const editor = document.querySelector('.editor-box');
+    editor.classList.add('glow-animation');
+    setTimeout(() => {
+        editor.classList.remove('glow-animation');
+    }, 2000);
+    
+    // تحديث حالة المحرر
+    document.getElementById('status').textContent = 'معدل';
+    document.getElementById('status').style.color = '#f39c12';
+    
+    // حفظ المثال
+    saveCurrentCode();
+}
+
+// منع إغلاق النافذة بالنقر خارجها
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('examplesModal');
+    if (modal && e.target === modal) {
+        closeExamplesModal();
+    }
+});
+
+// إغلاق النافذة بـ ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeExamplesModal();
+    }
+});
+
+// =============================================
+// 5. وظائف تشغيل الكود
+// =============================================
 
 // تشغيل الكود
 function runCode() {
@@ -57,6 +687,11 @@ function runCode() {
     isRunning = true;
     document.getElementById('status').textContent = 'جاري التشغيل...';
     document.getElementById('status').style.color = '#f39c12';
+    
+    // أنيميشن للزر
+    const runBtn = document.querySelector('.run-btn');
+    runBtn.classList.add('pulse');
+    setTimeout(() => runBtn.classList.remove('pulse'), 300);
     
     // إظهار مؤشر التحميل
     output.innerHTML = `
@@ -81,41 +716,43 @@ function runCode() {
         clearTimeout(executionTimeout);
     }
     
-    // تنفيذ الكود بعد تأخير قصير (لمحاكاة التشغيل)
+    // تنفيذ الكود بعد تأخير قصير
     executionTimeout = setTimeout(() => {
         try {
-            // حفظ console.log الأصلي
-            const originalConsoleLog = console.log;
-            const originalConsoleError = console.error;
-            const originalConsoleWarn = console.warn;
+            // حفظ console الأصلي
+            const originalConsole = {
+                log: console.log,
+                error: console.error,
+                warn: console.warn
+            };
             
             let logs = [];
             let errors = [];
             let warnings = [];
             
-            // تجميع كل أنواع الإخراج
+            // تجميع الإخراج
             console.log = function(...args) {
                 logs.push({ type: 'log', args: args });
-                originalConsoleLog.apply(console, args);
+                originalConsole.log.apply(console, args);
             };
             
             console.error = function(...args) {
                 errors.push({ type: 'error', args: args });
-                originalConsoleError.apply(console, args);
+                originalConsole.error.apply(console, args);
             };
             
             console.warn = function(...args) {
                 warnings.push({ type: 'warn', args: args });
-                originalConsoleWarn.apply(console, args);
+                originalConsole.warn.apply(console, args);
             };
             
             // تنفيذ الكود
             const result = eval(code);
             
             // استعادة console الأصلي
-            console.log = originalConsoleLog;
-            console.error = originalConsoleError;
-            console.warn = originalConsoleWarn;
+            console.log = originalConsole.log;
+            console.error = originalConsole.error;
+            console.warn = originalConsole.warn;
             
             // عرض النتائج
             displayResults(logs, errors, warnings, result);
@@ -134,7 +771,7 @@ function runCode() {
         document.getElementById('status').textContent = 'جاهز';
         document.getElementById('status').style.color = '#27ae60';
         
-    }, 300); // تأخير قصير للمحاكاة
+    }, 300);
 }
 
 // عرض النتائج
@@ -255,22 +892,32 @@ function displayError(error) {
 
 // تنسيق الإخراج
 function formatOutput(value) {
-    if (value === null) return 'null';
-    if (value === undefined) return 'undefined';
+    if (value === null) return '<span style="color: #777;">null</span>';
+    if (value === undefined) return '<span style="color: #777;">undefined</span>';
     
     if (typeof value === 'object') {
         try {
             if (Array.isArray(value)) {
                 return `[${value.map(item => formatOutput(item)).join(', ')}]`;
             }
-            return JSON.stringify(value, null, 2);
+            return JSON.stringify(value, null, 2)
+                .replace(/\n/g, '<br>')
+                .replace(/ /g, '&nbsp;');
         } catch {
             return String(value);
         }
     }
     
     if (typeof value === 'string') {
-        return value;
+        return `"${value}"`;
+    }
+    
+    if (typeof value === 'number') {
+        return `<span style="color: #2980b9;">${value}</span>`;
+    }
+    
+    if (typeof value === 'boolean') {
+        return `<span style="color: #e74c3c;">${value}</span>`;
     }
     
     return String(value);
@@ -287,9 +934,25 @@ function clearCode() {
                 <p>اكتب كود JavaScript جديد واضغط على "تشغيل الكود"</p>
             </div>
         `;
+        
+        // أنيميشن للزر
+        const clearBtn = document.querySelector('.clear-btn');
+        clearBtn.classList.add('shake-animation');
+        setTimeout(() => clearBtn.classList.remove('shake-animation'), 500);
+        
         showMessage('تم مسح المحرر', 'success');
+        
+        document.getElementById('status').textContent = 'جاهز';
+        document.getElementById('status').style.color = '#27ae60';
+        
+        // مسح من الذاكرة
+        localStorage.removeItem('lastCode');
     }
 }
+
+// =============================================
+// 6. وظائف الرسائل والإشعارات
+// =============================================
 
 // إظهار رسالة عابرة
 function showMessage(text, type) {
@@ -307,12 +970,21 @@ function showMessage(text, type) {
         top: 20px;
         right: 20px;
         z-index: 1000;
-        min-width: 200px;
+        min-width: 300px;
         animation: slideIn 0.3s ease-out;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        border-radius: 10px;
     `;
+    
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'error') icon = 'exclamation-circle';
+    
     message.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-        ${text}
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-${icon}" style="font-size: 20px;"></i>
+            <span>${text}</span>
+        </div>
     `;
     
     document.body.appendChild(message);
@@ -336,54 +1008,133 @@ messageStyles.textContent = `
 `;
 document.head.appendChild(messageStyles);
 
-// أمثلة كود سريعة يمكن تجربتها
-const quickExamples = [
-    `// جمع بسيط
-console.log(100 + 200); // 300
-console.log(50 * 3); // 150`,
+// =============================================
+// 7. وظائف التخزين والمفاتيح
+// =============================================
 
-    `// نص
-let name = "محمود";
-console.log("مرحباً " + name);
-console.log("طول النص:", name.length);`,
-
-    `// مصفوفة
-let fruits = ["تفاح", "موز", "برتقال"];
-console.log("الفواكه:", fruits);
-console.log("الفاكهة الأولى:", fruits[0]);`,
-
-    `// كائن
-let person = {
-    name: "سلمي",
-    age: 25,
-    city: "القاهرة"
-};
-console.log(person);
-console.log("الاسم:", person.name);`,
-
-    `// دالة
-function calculate(a, b, operation) {
-    if (operation === '+') return a + b;
-    if (operation === '-') return a - b;
-    if (operation === '*') return a * b;
-    if (operation === '/') return a / b;
+// حفظ الكود الحالي
+function saveCurrentCode() {
+    const code = document.getElementById('code-input').value;
+    if (code.trim().length > 0) {
+        localStorage.setItem('lastCode', code);
+    }
 }
 
-console.log("10 + 5 =", calculate(10, 5, '+'));
-console.log("10 * 5 =", calculate(10, 5, '*'));`
-];
+// استرجاع الكود المحفوظ
+function loadSavedCode() {
+    const savedCode = localStorage.getItem('lastCode');
+    if (savedCode) {
+        document.getElementById('code-input').value = savedCode;
+        showMessage('تم استرجاع الكود السابق', 'info');
+    }
+}
 
-// اختصار لوحة المفاتيح: Ctrl+Enter لتشغيل الكود
+// اختصارات لوحة المفاتيح
 document.addEventListener('keydown', function(e) {
+    // Ctrl+Enter لتشغيل الكود
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         runCode();
         showMessage('تم تشغيل الكود (Ctrl+Enter)', 'success');
     }
+    
+    // Ctrl+E لفتح الأمثلة
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        openExamplesModal();
+    }
+    
+    // Ctrl+L لمسح المحرر
+    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        clearCode();
+    }
 });
 
-// عندما يبدأ المستخدم بالكتابة
+// تحديث حالة المحرر عند الكتابة
 document.getElementById('code-input').addEventListener('input', function() {
     document.getElementById('status').textContent = 'معدل';
     document.getElementById('status').style.color = '#f39c12';
+    
+    // عد الأسطر
+    const lines = this.value.split('\n').length;
+    const chars = this.value.length;
+    
+    // تحديث العنوان
+    const title = lines > 1 ? `محرر الكود (${lines} أسطر, ${chars} حرف)` : 'محرر الكود';
+    const editorTitle = document.querySelector('.editor-header span');
+    if (editorTitle) {
+        editorTitle.innerHTML = `<i class="fas fa-code"></i> ${title}`;
+    }
+    
+    // حفظ تلقائي
+    saveCurrentCode();
 });
+
+// حفظ عند الخروج من المحرر
+document.getElementById('code-input').addEventListener('blur', saveCurrentCode);
+
+// =============================================
+// 8. تهيئة النظام النهائية
+// =============================================
+
+// تعيين نسخة الأمثلة في الصفحة الرئيسية
+function setupHomeExamples() {
+    const exampleCodeElement = document.querySelector('.example-code pre');
+    if (exampleCodeElement) {
+        let examplesHTML = '';
+        // أخذ 3 أمثلة عشوائية
+        const randomExamples = [...examplesLibrary]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 3);
+        
+        randomExamples.forEach(example => {
+            const preview = example.code.split('\n').slice(0, 2).join('\n');
+            examplesHTML += `// ${example.title}\n${preview}\n\n`;
+        });
+        
+        exampleCodeElement.textContent = examplesHTML.trim();
+    }
+}
+
+// تشغيل التهيئة عند تحميل الصفحة
+window.addEventListener('load', function() {
+    setupHomeExamples();
+    
+    // إضافة زر الأمثلة إذا لم يكن موجوداً
+    const controls = document.querySelector('.controls');
+    if (controls && !document.querySelector('.examples-btn')) {
+        const examplesBtn = document.createElement('button');
+        examplesBtn.className = 'btn examples-btn';
+        examplesBtn.innerHTML = '<i class="fas fa-code"></i> أمثلة';
+        examplesBtn.onclick = openExamplesModal;
+        
+        // إضافة الزر بعد زر التشغيل
+        const runBtn = document.querySelector('.run-btn');
+        if (runBtn) {
+            runBtn.parentNode.insertBefore(examplesBtn, runBtn.nextSibling);
+        } else {
+            controls.appendChild(examplesBtn);
+        }
+    }
+    
+    console.log('🚀 نظام مشغل JavaScript جاهز للعمل!');
+});
+
+// إضافة نافذة الأمثلة إذا لم تكن موجودة
+if (!document.getElementById('examplesModal')) {
+    const modalHTML = `
+    <div id="examplesModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-code"></i> مكتبة الأمثلة (${examplesLibrary.length} مثال)</h2>
+                <button class="close-modal" onclick="closeExamplesModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="examplesContainer">
+                <!-- الأمثلة ستظهر هنا -->
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
