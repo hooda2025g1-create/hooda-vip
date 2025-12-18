@@ -802,8 +802,11 @@ function displayError(error, outputElement) {
 }
 
 // =============================================
-// 7. وظائف الأمثلة
+// 7. وظائف الأمثلة - معدلة
 // =============================================
+let isModalOpen = false;
+let touchStartY = 0;
+
 function openExamplesModal() {
     const modal = document.getElementById('examplesModal');
     const container = document.getElementById('examplesContainer');
@@ -821,10 +824,53 @@ function openExamplesModal() {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     modal.classList.add('fade-in');
+    isModalOpen = true;
     
-    // منع التمرير على الجوال
-    if (isTouchDevice) {
-        document.addEventListener('touchmove', preventModalBackgroundScroll, { passive: false });
+    // إعداد معالجة اللمس بشكل صحيح
+    setupModalTouchHandling();
+}
+
+function setupModalTouchHandling() {
+    if (!isTouchDevice) return;
+    
+    const modal = document.getElementById('examplesModal');
+    const modalBody = modal.querySelector('.modal-body');
+    
+    if (!modal || !modalBody) return;
+    
+    // إزالة أي مستمعين سابقين
+    document.removeEventListener('touchmove', preventModalBackgroundScroll);
+    
+    // إضافة مستمع جديد
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+}
+
+function handleTouchMove(e) {
+    if (!isModalOpen) return;
+    
+    const modal = document.getElementById('examplesModal');
+    const modalBody = modal.querySelector('.modal-body');
+    
+    // التحقق إذا كان اللمس داخل محتوى النافذة
+    const isInModalContent = e.target.closest('.modal-content');
+    
+    if (!isInModalContent) {
+        // إذا كان خارج النافذة، منع التمرير
+        e.preventDefault();
+        return;
+    }
+    
+    // إذا كان داخل محتوى النافذة، السماح بالتمرير إذا كان هناك محتوى للتجوله
+    if (isInModalContent) {
+        const content = modalBody;
+        const isAtTop = content.scrollTop === 0;
+        const isAtBottom = content.scrollHeight - content.scrollTop <= content.clientHeight + 1;
+        
+        // التحكم في التمرير
+        if ((isAtTop && e.touches[0].clientY > touchStartY) || 
+            (isAtBottom && e.touches[0].clientY < touchStartY)) {
+            e.preventDefault();
+        }
     }
 }
 
@@ -840,15 +886,57 @@ function createExampleCard(example) {
         </div>
     `;
     
-    // إضافة مستمع الأحداث
-    const eventType = isTouchDevice ? 'touchstart' : 'click';
-    card.addEventListener(eventType, function(e) {
-        if (isTouchDevice) e.preventDefault();
-        selectExample(example);
-    });
-    
+    // إضافة مستمع الأحداث محسن للجوال
     if (isTouchDevice) {
-        card.style.touchAction = 'manipulation';
+        let touchStartTime = 0;
+        let touchStartY = 0;
+        
+        card.addEventListener('touchstart', function(e) {
+            touchStartTime = Date.now();
+            touchStartY = e.touches[0].clientY;
+            this.classList.add('touch-active');
+        }, { passive: true });
+        
+        card.addEventListener('touchend', function(e) {
+            const touchEndTime = Date.now();
+            const touchDuration = touchEndTime - touchStartTime;
+            
+            // اختيار البطاقة فقط إذا كانت النقرة قصيرة ولم يكن هناك تمرير
+            if (touchDuration < 200) {
+                selectExample(example);
+                e.preventDefault();
+            }
+            
+            this.classList.remove('touch-active');
+        }, { passive: false });
+        
+        card.addEventListener('touchmove', function(e) {
+            // إذا تحرك الإصبع كثيراً، فهو تمرير وليس اختيار
+            if (Math.abs(e.touches[0].clientY - touchStartY) > 10) {
+                this.classList.remove('touch-active');
+            }
+        }, { passive: true });
+        
+        card.style.touchAction = 'pan-y';
+        card.style.userSelect = 'none';
+        card.style.webkitUserSelect = 'none';
+    } else {
+        // للكمبيوتر
+        card.addEventListener('click', function() {
+            selectExample(example);
+        });
+        
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+            this.style.borderColor = '#9b59b6';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+            this.style.borderColor = 'transparent';
+        });
     }
     
     return card;
@@ -875,16 +963,11 @@ function closeExamplesModal() {
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
     modal.classList.remove('fade-in');
+    isModalOpen = false;
     
+    // إزالة مستمع اللمس
     if (isTouchDevice) {
-        document.removeEventListener('touchmove', preventModalBackgroundScroll);
-    }
-}
-
-function preventModalBackgroundScroll(e) {
-    const modal = document.getElementById('examplesModal');
-    if (modal && modal.style.display === 'flex') {
-        e.preventDefault();
+        document.removeEventListener('touchmove', handleTouchMove);
     }
 }
 
