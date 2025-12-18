@@ -421,9 +421,9 @@ promise
         id: 14,
         title: "الفئات Classes",
         description: "البرمجة الكائنية في JavaScript",
-        category: "متقدم",
+        category: "متوسط",
         tags: ["Classes", "OOP"],
-        level: "advanced",
+        level: "intermediate",
         code: `// تعريف class
 class Person {
     constructor(name, age) {
@@ -717,7 +717,7 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
     const allOutputs = [
         { data: logs, title: 'الإخراج', icon: 'check-circle', color: '#28a745', className: 'success' },
         { data: errors, title: 'الأخطاء', icon: 'exclamation-circle', color: '#dc3545', className: 'error' },
-        { data: warnings, title: 'تحذيرات', icon: 'exclamation-triangle', color: '#f59e0b', className: 'warning' },
+        { data: warnings, title: 'تحذيرات', icon: 'exclamation-triangle', color: '#f39c12', className: 'warning' },
         { data: infos, title: 'معلومات', icon: 'info-circle', color: '#17a2b8', className: 'info' }
     ];
     
@@ -763,7 +763,7 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
             <div class="stats-grid">
                 <span style="color: #28a745;">✅ ${logs.length} إخراج</span>
                 <span style="color: #dc3545;">❌ ${errors.length} خطأ</span>
-                <span style="color: #f59e0b;">⚠️ ${warnings.length} تحذير</span>
+                <span style="color: #f39c12;">⚠️ ${warnings.length} تحذير</span>
                 <span style="color: #17a2b8;">ℹ️ ${infos.length} معلومات</span>
             </div>
         </div>
@@ -1341,7 +1341,6 @@ function addAdditionalStyles() {
             margin-top: 10px;
             color: #dc3545;
             overflow-x: auto;
-            white-space: pre-wrap;
         }
         
         @keyframes spin {

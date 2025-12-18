@@ -17,6 +17,45 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* زر الوضع الداكن */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .theme-toggle button {
+            width: 60px;
+            height: 30px;
+            background: #2c3e50;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: white;
+        }
+
+        .theme-toggle button::before {
+            content: '';
+            position: absolute;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        body.dark .theme-toggle button::before {
+            transform: translateX(30px);
         }
         
         .container {
@@ -26,6 +65,12 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        body.dark .container {
+            background: #1a1a1a;
+            color: #fff;
         }
         
         /* الهيدر */
@@ -208,6 +253,11 @@
             border: 3px solid #2c3e50;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
+
+        body.dark .output-box {
+            background: #2d2d2d;
+            color: #fff;
+        }
         
         .output-header {
             background: linear-gradient(135deg, #34495e, #2c3e50);
@@ -227,6 +277,11 @@
             overflow-y: auto;
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             min-height: 300px;
+        }
+
+        body.dark #output {
+            background: #1a1a1a;
+            color: #fff;
         }
         
         /* الأنيميشن */
@@ -409,7 +464,7 @@
             animation: modalSlideIn 0.4s ease-out;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        
+
         @keyframes modalSlideIn {
             from { transform: translateY(-50px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -556,6 +611,11 @@
             flex-direction: column;
             gap: 8px;
         }
+
+        body.dark .footer {
+            background: #2d2d2d;
+            color: #fff;
+        }
         
         .footer p {
             display: flex;
@@ -675,6 +735,14 @@
     </style>
 </head>
 <body>
+    <!-- زر الوضع الداكن -->
+    <div class="theme-toggle">
+        <button id="themeToggle">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+        </button>
+    </div>
+
     <div class="container">
         <!-- الهيدر -->
         <div class="header">
@@ -800,19 +868,64 @@ console.log("مربع 8 هو: " + square(8));</pre>
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // إضافة أنيميشن عند دخول الموقع
+        document.addEventListener('DOMContentLoaded', function() {
+            // أنيميشن العناصر
+            const elements = document.querySelectorAll('.editor-box, .output-box, .header, .footer');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
 
-<!-- نافذة الأمثلة -->
-<div id="examplesModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-code"></i> مكتبة الأمثلة التفاعلية</h2>
-            <button class="close-modal" onclick="closeExamplesModal()">&times;</button>
-        </div>
-        <div class="modal-body" id="examplesContainer">
-            <!-- الأمثلة ستظهر هنا عبر JavaScript -->
-        </div>
-    </div>
-</div>
+            // أنيميشن اسم المطور
+            setTimeout(() => {
+                const devName = document.querySelector('.team-info p:first-child');
+                if (devName) {
+                    devName.classList.add('pulse');
+                    setTimeout(() => devName.classList.remove('pulse'), 1000);
+                }
+            }, 1000);
 
+            // الوضع الداكن
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('dark');
+                    const isDark = document.body.classList.contains('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                });
+
+                // تحميل الثيم المحفوظ
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark');
+                }
+            }
+
+            // أنيميشن عند التمرير
+            const observerOptions = {
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+
+            // مراقبة العناصر
+            const animatedElements = document.querySelectorAll('.team-member, .example-code, .message');
+            animatedElements.forEach(el => observer.observe(el));
+        });
+    </script>
 </body>
 </html>
