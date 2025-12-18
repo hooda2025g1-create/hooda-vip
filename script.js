@@ -4,6 +4,8 @@
 let isRunning = false;
 let executionTimeout = null;
 let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+let touchStartY = 0;
+let isModalOpen = false;
 
 // =============================================
 // 2. مكتبة الأمثلة الكاملة (15 مثال)
@@ -534,6 +536,17 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSystem();
     setupEventListeners();
     loadSavedCode();
+    
+    // إضافة التحسينات الجديدة
+    enhanceMobileModalExperience();
+    setupSmoothScrolling();
+    setupAdditionalLoaders();
+    
+    // تحسينات إضافية للجوال
+    if (isTouchDevice) {
+        document.body.classList.add('mobile-optimized');
+        setupTouchControls();
+    }
 });
 
 // =============================================
@@ -545,18 +558,17 @@ function initializeSystem() {
     createExamplesModal();
     addExamplesButton();
     displayRandomExamples();
+    addAdditionalStyles();
+    addMobileOptimizationsCSS();
 }
 
 function setupEventListeners() {
-    // حجم النافذة
     window.addEventListener('resize', adjustEditorSize);
     
-    // اختصارات لوحة المفاتيح (للكمبيوتر فقط)
     if (!isTouchDevice) {
         document.addEventListener('keydown', handleKeyboardShortcuts);
     }
     
-    // استماع لتغيرات المحرر
     const codeInput = document.getElementById('code-input');
     if (codeInput) {
         codeInput.addEventListener('input', handleCodeInput);
@@ -589,22 +601,18 @@ function handleCodeInput() {
     
     if (!codeInput || !statusElement) return;
     
-    // تحديث الحالة
     statusElement.textContent = 'معدل';
     statusElement.style.color = '#f39c12';
     
-    // عد الأسطر والأحرف
     const lines = codeInput.value.split('\n').length;
     const chars = codeInput.value.length;
     
-    // تحديث العنوان
     const title = `محرر الكود (${lines} سطر, ${chars} حرف)`;
     const editorTitle = document.querySelector('.editor-header span');
     if (editorTitle) {
         editorTitle.innerHTML = `<i class="fas fa-code"></i> ${title}`;
     }
     
-    // حفظ تلقائي
     saveCurrentCode();
 }
 
@@ -632,22 +640,17 @@ function runCode() {
         return;
     }
     
-    // تعيين حالة التشغيل
     isRunning = true;
     updateStatus('جاري التشغيل...', '#f39c12');
     
-    // أنيميشن للزر
     animateButton('.run-btn', 'pulse');
     
-    // إظهار مؤشر التحميل
     showLoadingIndicator(output);
     
-    // إلغاء أي وقت سابق
     if (executionTimeout) {
         clearTimeout(executionTimeout);
     }
     
-    // تنفيذ الكود بعد تأخير قصير
     executionTimeout = setTimeout(() => {
         executeJavaScriptCode(code, output);
         isRunning = false;
@@ -657,7 +660,6 @@ function runCode() {
 
 function executeJavaScriptCode(code, outputElement) {
     try {
-        // حفظ console الأصلي
         const originalConsole = {
             log: console.log,
             error: console.error,
@@ -670,7 +672,6 @@ function executeJavaScriptCode(code, outputElement) {
         const warnings = [];
         const infos = [];
         
-        // تجميع الإخراج
         console.log = function(...args) {
             logs.push({ type: 'log', args });
             originalConsole.log.apply(console, args);
@@ -691,16 +692,13 @@ function executeJavaScriptCode(code, outputElement) {
             originalConsole.info.apply(console, args);
         };
         
-        // تنفيذ الكود
         const result = eval(code);
         
-        // استعادة console الأصلي
         console.log = originalConsole.log;
         console.error = originalConsole.error;
         console.warn = originalConsole.warn;
         console.info = originalConsole.info;
         
-        // عرض النتائج
         displayResults(logs, errors, warnings, infos, result, outputElement);
         showMessage('تم تنفيذ الكود بنجاح! ✅', 'success');
         
@@ -713,7 +711,6 @@ function executeJavaScriptCode(code, outputElement) {
 function displayResults(logs, errors, warnings, infos, result, outputElement) {
     let html = '<div class="slide-in">';
     
-    // عرض جميع أنواع الإخراج
     const allOutputs = [
         { data: logs, title: 'الإخراج', icon: 'check-circle', color: '#28a745', className: 'success' },
         { data: errors, title: 'الأخطاء', icon: 'exclamation-circle', color: '#dc3545', className: 'error' },
@@ -742,7 +739,6 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
     
     html += '</div>';
     
-    // عرض القيمة المعادة
     if (result !== undefined) {
         html += `
             <div class="success message pulse">
@@ -755,7 +751,6 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
         `;
     }
     
-    // إضافة إحصائيات
     const totalOutputs = logs.length + errors.length + warnings.length + infos.length;
     html += `
         <div class="statistics">
@@ -802,31 +797,25 @@ function displayError(error, outputElement) {
 }
 
 // =============================================
-// 7. وظائف الأمثلة - معدلة
+// 7. وظائف الأمثلة - معدلة للجوال
 // =============================================
-let isModalOpen = false;
-let touchStartY = 0;
-
 function openExamplesModal() {
     const modal = document.getElementById('examplesModal');
     const container = document.getElementById('examplesContainer');
     
     if (!modal || !container) return;
     
-    // تعبئة الأمثلة
     container.innerHTML = '';
     examplesLibrary.forEach(example => {
         const card = createExampleCard(example);
         container.appendChild(card);
     });
     
-    // إظهار النافذة
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     modal.classList.add('fade-in');
     isModalOpen = true;
     
-    // إعداد معالجة اللمس بشكل صحيح
     setupModalTouchHandling();
 }
 
@@ -838,10 +827,16 @@ function setupModalTouchHandling() {
     
     if (!modal || !modalBody) return;
     
-    // إزالة أي مستمعين سابقين
-    document.removeEventListener('touchmove', preventModalBackgroundScroll);
+    modalBody.style.cssText = `
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        max-height: 65vh;
+        padding-bottom: 30px;
+        will-change: transform;
+    `;
     
-    // إضافة مستمع جديد
+    document.removeEventListener('touchmove', preventModalBackgroundScroll);
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
 }
 
@@ -851,64 +846,69 @@ function handleTouchMove(e) {
     const modal = document.getElementById('examplesModal');
     const modalBody = modal.querySelector('.modal-body');
     
-    // التحقق إذا كان اللمس داخل محتوى النافذة
     const isInModalContent = e.target.closest('.modal-content');
     
     if (!isInModalContent) {
-        // إذا كان خارج النافذة، منع التمرير
         e.preventDefault();
         return;
     }
     
-    // إذا كان داخل محتوى النافذة، السماح بالتمرير إذا كان هناك محتوى للتجوله
     if (isInModalContent) {
         const content = modalBody;
         const isAtTop = content.scrollTop === 0;
         const isAtBottom = content.scrollHeight - content.scrollTop <= content.clientHeight + 1;
         
-        // التحكم في التمرير
-        if ((isAtTop && e.touches[0].clientY > touchStartY) || 
-            (isAtBottom && e.touches[0].clientY < touchStartY)) {
+        if ((isAtTop && e.touches[0].clientY > touchStartY && touchStartY - e.touches[0].clientY < -10) || 
+            (isAtBottom && e.touches[0].clientY < touchStartY && touchStartY - e.touches[0].clientY > 10)) {
             e.preventDefault();
         }
     }
 }
 
+// دالة محسنة لإنشاء بطاقات الأمثلة مع تحسينات الجوال
 function createExampleCard(example) {
     const card = document.createElement('div');
     card.className = 'example-card';
     card.dataset.exampleId = example.id;
+    
+    // تصميم محسّن مع زوايا دائرية
     card.innerHTML = `
-        <h4><i class="fas fa-code"></i> ${example.title}</h4>
-        <p>${example.description}</p>
-        <div class="example-tags">
-            <span class="tag ${example.level}">${example.category}</span>
-            ${example.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+        <div class="card-content">
+            <div class="card-header">
+                <i class="fas fa-code"></i>
+                <h4>${example.title}</h4>
+            </div>
+            <p>${example.description}</p>
+            <div class="example-tags">
+                <span class="tag ${example.level}">${example.category}</span>
+                ${example.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
         </div>
     `;
     
-    // معالجة مختلفة للجوال والكمبيوتر
+    // معالجة ذكية للجوال والكمبيوتر
     if (isTouchDevice) {
-        // للجوال: معالجة ذكية لللمس
+        // للجوال: معالجة ذكية لللمس - محسنة
         let cardTouchStartY = 0;
         let cardTouchStartTime = 0;
         let cardIsMoving = false;
+        const TOUCH_MOVE_THRESHOLD = 15;
+        const TOUCH_TIME_THRESHOLD = 250;
         
         card.addEventListener('touchstart', function(e) {
             cardTouchStartY = e.touches[0].clientY;
             cardTouchStartTime = Date.now();
             cardIsMoving = false;
-            this.classList.add('touch-start');
+            this.classList.add('touch-active');
         }, { passive: true });
         
         card.addEventListener('touchmove', function(e) {
             const currentY = e.touches[0].clientY;
             const deltaY = Math.abs(currentY - cardTouchStartY);
             
-            // إذا تحرك الإصبع أكثر من 8 بكسل، فهو تمرير
-            if (deltaY > 8) {
+            if (deltaY > TOUCH_MOVE_THRESHOLD) {
                 cardIsMoving = true;
-                this.classList.remove('touch-start');
+                this.classList.remove('touch-active');
             }
         }, { passive: true });
         
@@ -916,27 +916,41 @@ function createExampleCard(example) {
             const touchEndTime = Date.now();
             const touchDuration = touchEndTime - cardTouchStartTime;
             
-            // اختيار البطاقة فقط إذا:
-            // 1. لم يكن هناك حركة (ليس تمريراً)
-            // 2. مدة اللمس أقل من 300ms (نقرة سريعة)
-            // 3. المستخدم لم يكن يقوم بالتمرير العام
-            if (!cardIsMoving && !isTouchMoving && touchDuration < 300) {
-                e.preventDefault();
-                e.stopPropagation();
-                selectExample(example);
+            if (!cardIsMoving && touchDuration < TOUCH_TIME_THRESHOLD) {
+                setTimeout(() => {
+                    if (!cardIsMoving) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectExample(example);
+                        
+                        this.classList.add('click-effect');
+                        setTimeout(() => this.classList.remove('click-effect'), 300);
+                    }
+                }, 50);
             }
             
-            this.classList.remove('touch-start');
+            this.classList.remove('touch-active');
         }, { passive: false });
         
         card.addEventListener('touchcancel', function() {
-            this.classList.remove('touch-start');
+            cardIsMoving = true;
+            this.classList.remove('touch-active');
         }, { passive: true });
         
-        // إعدادات اللمس للبطاقة
-        card.style.touchAction = 'pan-y';
-        card.style.userSelect = 'none';
-        card.style.webkitUserSelect = 'none';
+        // تحسينات الشكل للجوال
+        card.style.cssText = `
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 10px 0;
+            border-radius: 16px !important;
+            border: 1px solid #e0e0e0;
+            background: white;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            overflow: hidden;
+        `;
         
     } else {
         // للكمبيوتر: استخدام الماوس فقط
@@ -979,7 +993,6 @@ function closeExamplesModal() {
     const modal = document.getElementById('examplesModal');
     if (!modal) return;
     
-    // تنظيف مستمعين اللمس
     if (isTouchDevice) {
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
@@ -990,27 +1003,22 @@ function closeExamplesModal() {
         document.removeEventListener('touchmove', preventModalBackgroundScroll);
     }
     
-    // إخفاء النافذة
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
     modal.classList.remove('fade-in');
     
-    // إعادة تعيين المتغيرات
-    isTouchMoving = false;
+    isModalOpen = false;
 }
 
 // =============================================
 // 8. وظائف المساعدة والرسائل
 // =============================================
 function showMessage(text, type = 'info') {
-    // إزالة الرسائل القديمة
     removeExistingMessages();
     
-    // إنشاء الرسالة الجديدة
     const message = createMessageElement(text, type);
     document.body.appendChild(message);
     
-    // إزالة الرسالة بعد 3 ثوان
     setTimeout(() => removeMessage(message), 3000);
 }
 
@@ -1027,7 +1035,6 @@ function createMessageElement(text, type) {
     
     const icon = icons[type] || 'info-circle';
     
-    // تصميم متجاوب
     message.style.cssText = `
         position: fixed;
         ${isTouchDevice ? `
@@ -1045,7 +1052,7 @@ function createMessageElement(text, type) {
         z-index: 10000;
         animation: slideIn 0.3s ease-out;
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        border-radius: ${isTouchDevice ? '10px' : '8px'};
+        border-radius: ${isTouchDevice ? '12px' : '8px'};
         text-align: ${isTouchDevice ? 'center' : 'left'};
         display: flex;
         align-items: center;
@@ -1118,17 +1125,13 @@ function loadSavedCode() {
 function setupMobileOptimizations() {
     if (!isTouchDevice) return;
     
-    // منع التكبير بالنقر المزدوج
     document.addEventListener('touchstart', function(event) {
         if (event.touches.length > 1) {
             event.preventDefault();
         }
     }, { passive: false });
     
-    // تحسين أداء التمرير
     document.body.style.webkitOverflowScrolling = 'touch';
-    
-    // تحسين الأداء العام
     document.body.classList.add('touch-device');
 }
 
@@ -1250,26 +1253,22 @@ function showLoadingIndicator(element) {
 // 14. اختصارات لوحة المفاتيح
 // =============================================
 function handleKeyboardShortcuts(e) {
-    // Ctrl+Enter لتشغيل الكود
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         runCode();
         showMessage('تم تشغيل الكود (Ctrl+Enter)', 'success');
     }
     
-    // Ctrl+E لفتح الأمثلة
     if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
         e.preventDefault();
         openExamplesModal();
     }
     
-    // Ctrl+L لمسح المحرر
     if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
         e.preventDefault();
         clearCode();
     }
     
-    // ESC لإغلاق النوافذ
     if (e.key === 'Escape') {
         closeExamplesModal();
     }
@@ -1296,7 +1295,6 @@ function createExamplesModal() {
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // إعداد إغلاق النافذة
     setupModalCloseEvents();
 }
 
@@ -1304,13 +1302,11 @@ function setupModalCloseEvents() {
     const modal = document.getElementById('examplesModal');
     if (!modal) return;
     
-    // إغلاق بالزر
     const closeBtn = modal.querySelector('.close-modal');
     if (closeBtn) {
         closeBtn.addEventListener('click', closeExamplesModal);
     }
     
-    // إغلاق بالنقر خارج النافذة
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
             closeExamplesModal();
@@ -1331,7 +1327,6 @@ function addExamplesButton() {
     
     examplesBtn.addEventListener('click', openExamplesModal);
     
-    // إضافة بعد زر التشغيل
     const runBtn = controls.querySelector('.run-btn');
     if (runBtn) {
         runBtn.parentNode.insertBefore(examplesBtn, runBtn.nextSibling);
@@ -1344,7 +1339,6 @@ function displayRandomExamples() {
     const exampleCodeElement = document.querySelector('.example-code pre');
     if (!exampleCodeElement) return;
     
-    // أخذ 3 أمثلة عشوائية
     const randomExamples = [...examplesLibrary]
         .sort(() => Math.random() - 0.5)
         .slice(0, 3);
@@ -1357,7 +1351,6 @@ function displayRandomExamples() {
     
     exampleCodeElement.textContent = examplesHTML.trim();
     
-    // إعداد النقر على الأمثلة
     if (isTouchDevice) {
         exampleCodeElement.addEventListener('touchstart', handleExampleClick, { passive: false });
     } else {
@@ -1384,13 +1377,11 @@ function handleExampleClick(e) {
 }
 
 // =============================================
-// 16. تهيئة CSS الإضافية
+// 16. تهيئة CSS الإضافية مع تحسينات الجوال
 // =============================================
 function addAdditionalStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        /* ... (الكود الأصلي يبقى كما هو) ... */
-        
         /* تحسينات إضافية للجوال */
         @media (max-width: 767px) {
             .modal-overlay {
@@ -1401,9 +1392,10 @@ function addAdditionalStyles() {
             .modal-content {
                 width: 100%;
                 max-height: 85vh;
-                border-radius: 20px 20px 0 0;
+                border-radius: 24px 24px 0 0 !important;
                 animation: slideUp 0.3s ease-out;
                 margin: 0;
+                overflow: hidden;
             }
             
             @keyframes slideUp {
@@ -1418,15 +1410,96 @@ function addAdditionalStyles() {
                 -webkit-overflow-scrolling: touch;
             }
             
+            /* تحسين بطاقات الأمثلة - الزوايا الدائرية */
             .example-card {
-                margin: 8px 0;
+                margin: 10px 0;
                 transition: transform 0.2s, background-color 0.2s;
                 -webkit-tap-highlight-color: transparent;
+                border-radius: 16px !important;
+                border: 1px solid #e0e0e0;
+                overflow: hidden;
+                background: white;
+                padding: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             }
             
-            .example-card.touch-start {
+            .example-card.touch-active {
                 background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                transform: scale(0.99);
+                transform: scale(0.98);
+            }
+            
+            .example-card.click-effect {
+                animation: clickPulse 0.3s ease-out;
+            }
+            
+            @keyframes clickPulse {
+                0% { transform: scale(0.98); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            
+            /* تحسين التصميم الداخلي */
+            .card-content {
+                position: relative;
+            }
+            
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .card-header i {
+                color: #9b59b6;
+                font-size: 18px;
+            }
+            
+            .card-header h4 {
+                margin: 0;
+                font-size: 16px;
+                color: #2c3e50;
+                font-weight: 600;
+            }
+            
+            .example-card p {
+                margin: 0 0 12px 0;
+                font-size: 14px;
+                color: #7f8c8d;
+                line-height: 1.4;
+            }
+            
+            .example-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .tag {
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 12px;
+                background: #f8f9fa;
+                border: 1px solid #e9ecef;
+                color: #6c757d;
+            }
+            
+            .tag.beginner {
+                background: rgba(46, 204, 113, 0.1);
+                color: #27ae60;
+                border-color: rgba(46, 204, 113, 0.2);
+            }
+            
+            .tag.intermediate {
+                background: rgba(241, 196, 15, 0.1);
+                color: #f39c12;
+                border-color: rgba(241, 196, 15, 0.2);
+            }
+            
+            .tag.advanced {
+                background: rgba(231, 76, 60, 0.1);
+                color: #e74c3c;
+                border-color: rgba(231, 76, 60, 0.2);
             }
             
             /* تحسين شريط التمرير */
@@ -1458,21 +1531,64 @@ function addAdditionalStyles() {
                 align-items: center;
                 justify-content: center;
                 z-index: 10;
+                border: none;
+                cursor: pointer;
+                color: white;
             }
             
             .modal-header h2 {
                 padding: 0 50px;
                 text-align: center;
+                font-size: 20px;
+            }
+            
+            /* تحسين الأزرار العامة */
+            .btn {
+                border-radius: 14px !important;
+                padding: 14px 20px !important;
+                font-size: 16px;
+                min-height: 48px;
+                min-width: 48px;
+            }
+            
+            /* تحسين المربعات الكبيرة */
+            .editor-box, .output-box {
+                border-radius: 18px !important;
+                overflow: hidden !important;
+                border: 1px solid #ddd !important;
+                margin-bottom: 16px;
+            }
+            
+            /* تحسين الحاويات */
+            .container, .controls, .code-container {
+                border-radius: 16px !important;
+            }
+            
+            .editor-header, .output-header {
+                border-radius: 18px 18px 0 0 !important;
             }
         }
         
-        /* منع السلوك الافتراضي لللمس */
-        .no-touch-action {
-            touch-action: none;
+        /* تحسينات للكمبيوتر أيضاً */
+        .example-card {
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
         }
         
-        .allow-touch-action {
-            touch-action: pan-y;
+        .btn {
+            border-radius: 10px !important;
+            transition: all 0.2s;
+        }
+        
+        .editor-box, .output-box {
+            border-radius: 12px !important;
+            overflow: hidden;
+        }
+        
+        /* تأثير للنقر على البطاقات */
+        .example-card:active {
+            transform: scale(0.98);
+            background: #f8f9fa;
         }
         
         /* تحسين الأداء */
@@ -1507,16 +1623,13 @@ function enhanceMobileModalExperience() {
     const modal = document.getElementById('examplesModal');
     if (!modal) return;
     
-    // تحسين تجربة النافذة المنبثقة على الجوال
     modal.style.touchAction = 'none';
     
-    // إعداد خاصية overscroll-behavior
     const modalContent = modal.querySelector('.modal-content');
     if (modalContent) {
         modalContent.style.overscrollBehavior = 'contain';
     }
     
-    // إعداد معالجة اللمس لزر الإغلاق
     const closeBtn = modal.querySelector('.close-modal');
     if (closeBtn) {
         closeBtn.addEventListener('touchstart', function(e) {
@@ -1535,15 +1648,13 @@ function enhanceMobileModalExperience() {
         }, { passive: true });
     }
     
-    // منع التكبير على المدخلات
     const codeInput = document.getElementById('code-input');
     if (codeInput) {
         codeInput.addEventListener('touchstart', function() {
-            this.style.fontSize = '16px'; // منع التكبير التلقائي
+            this.style.fontSize = '16px';
         }, { passive: true });
     }
     
-    // تحسين حجم الخط للجوال
     if (window.innerWidth < 768) {
         document.querySelectorAll('.example-card h4').forEach(h4 => {
             h4.style.fontSize = '16px';
@@ -1559,7 +1670,6 @@ function enhanceMobileModalExperience() {
 // 19. تحسين أداء التمرير
 // =============================================
 function setupSmoothScrolling() {
-    // تحسين أداء التمرير للنافذة المنبثقة
     const modalBody = document.querySelector('.modal-body');
     if (modalBody) {
         modalBody.style.willChange = 'transform';
@@ -1567,7 +1677,6 @@ function setupSmoothScrolling() {
         modalBody.style.perspective = '1000px';
     }
     
-    // تحسين أداء التمرير للمخرجات
     const output = document.getElementById('output');
     if (output) {
         output.style.willChange = 'transform';
@@ -1579,7 +1688,6 @@ function setupSmoothScrolling() {
 // 20. إعدادات تحميل إضافية
 // =============================================
 function setupAdditionalLoaders() {
-    // إضافة مؤشر تحميل عند فتح النافذة
     const originalOpenExamplesModal = openExamplesModal;
     openExamplesModal = function() {
         showMessage('جاري تحميل الأمثلة...', 'info');
@@ -1588,11 +1696,9 @@ function setupAdditionalLoaders() {
         }, 100);
     };
     
-    // تحسين أداء التنفيذ للجوال
     const originalRunCode = runCode;
     runCode = function() {
         if (isTouchDevice) {
-            // تقليل وقت الانتظار للجوال
             executionTimeout = setTimeout(() => {
                 const codeInput = document.getElementById('code-input');
                 const output = document.getElementById('output');
@@ -1613,44 +1719,7 @@ function setupAdditionalLoaders() {
 }
 
 // =============================================
-// 21. تحديث تهيئة النظام
-// =============================================
-// في نهاية DOMContentLoaded، أضف:
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("✅ مشغل JavaScript جاهز!");
-    
-    initializeSystem();
-    setupEventListeners();
-    loadSavedCode();
-    
-    // إضافة التحسينات الجديدة
-    enhanceMobileModalExperience();
-    setupSmoothScrolling();
-    setupAdditionalLoaders();
-    
-    // تحسينات إضافية للجوال
-    if (isTouchDevice) {
-        // إضافة تأثيرات للجوال
-        document.body.classList.add('mobile-optimized');
-        
-        // تحسين أزرار اللمس
-        const buttons = document.querySelectorAll('.btn');
-        buttons.forEach(btn => {
-            btn.style.transition = 'all 0.15s';
-            btn.addEventListener('touchstart', function() {
-                this.style.opacity = '0.8';
-                this.style.transform = 'translateY(2px)';
-            });
-            btn.addEventListener('touchend', function() {
-                this.style.opacity = '1';
-                this.style.transform = 'translateY(0)';
-            });
-        });
-    }
-});
-
-// =============================================
-// 22. CSS إضافي للتحسينات
+// 21. CSS إضافي للتحسينات
 // =============================================
 function addMobileOptimizationsCSS() {
     const mobileCSS = document.createElement('style');
@@ -1661,32 +1730,40 @@ function addMobileOptimizationsCSS() {
             min-width: 48px;
             padding: 12px 20px;
             font-size: 16px;
+            border-radius: 14px !important;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         .mobile-optimized .example-card {
             padding: 16px;
-            margin: 8px 0;
-            border-radius: 12px;
+            margin: 10px 0;
+            border-radius: 18px !important;
             transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid #e8e8e8;
+            background: white;
         }
         
         .mobile-optimized .example-card:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
             background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
         }
         
         .mobile-optimized .modal-overlay {
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: none;
+            backdrop-filter: blur(5px);
         }
         
         .mobile-optimized .modal-content {
             max-height: 85vh;
-            border-radius: 20px 20px 0 0;
+            border-radius: 24px 24px 0 0 !important;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
         }
         
         .mobile-optimized .modal-body {
-            padding-bottom: 20px;
+            padding-bottom: 30px;
         }
         
         /* تحسين شريط التمرير للجوال */
@@ -1696,56 +1773,30 @@ function addMobileOptimizationsCSS() {
         }
         
         .mobile-optimized ::-webkit-scrollbar-thumb {
-            background: rgba(155, 89, 182, 0.5);
+            background: linear-gradient(180deg, #9b59b6, #8e44ad);
             border-radius: 4px;
         }
         
         .mobile-optimized ::-webkit-scrollbar-thumb:hover {
-            background: rgba(155, 89, 182, 0.7);
+            background: rgba(155, 89, 182, 0.8);
         }
         
-        /* تحسين ظهور النافذة على الجوال */
-        @media (max-width: 767px) {
-            .modal-content {
-                animation: modalSlideUp 0.3s ease-out;
-            }
-            
-            @keyframes modalSlideUp {
-                from {
-                    transform: translateY(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-            
-            .modal-header {
-                padding: 20px;
-                position: relative;
-            }
-            
-            .close-modal {
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                right: auto;
-                background: rgba(255, 255, 255, 0.2);
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 20px;
-            }
-            
-            .modal-header h2 {
-                font-size: 20px;
-                text-align: center;
-                padding: 0 40px;
-            }
+        /* تحسينات للأزرار */
+        .btn:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+        
+        /* تحسينات للحاويات */
+        .container {
+            border-radius: 20px !important;
+            overflow: hidden;
+        }
+        
+        .controls {
+            border-radius: 16px !important;
+            padding: 12px;
+            background: #f8f9fa;
         }
         
         /* تحسين التمرير اللطيف */
@@ -1760,22 +1811,87 @@ function addMobileOptimizationsCSS() {
             backface-visibility: hidden;
             perspective: 1000px;
         }
+        
+        /* زوايا دائرية للعناصر الأساسية */
+        .code-container {
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .editor-header, .output-header {
+            border-radius: 16px 16px 0 0 !important;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        /* تحسينات للشاشات الصغيرة جداً */
+        @media (max-width: 480px) {
+            .btn {
+                padding: 10px 16px !important;
+                font-size: 14px !important;
+            }
+            
+            .example-card {
+                padding: 12px !important;
+                border-radius: 14px !important;
+            }
+            
+            .modal-content {
+                border-radius: 20px 20px 0 0 !important;
+            }
+        }
     `;
     
     document.head.appendChild(mobileCSS);
 }
 
 // =============================================
+// 22. دالة جديدة لتحسين تجربة اللمس على الجوال
+// =============================================
+function setupTouchControls() {
+    if (!isTouchDevice) return;
+    
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.style.cssText = `
+            min-height: 44px;
+            min-width: 44px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: all 0.15s ease;
+        `;
+        
+        btn.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
+            this.style.opacity = '0.9';
+        });
+        
+        btn.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+            this.style.opacity = '1';
+        });
+    });
+    
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('touchstart', function() {
+            this.style.fontSize = '16px';
+        });
+    });
+}
+
+// =============================================
 // 23. التهيئة النهائية المحسنة
 // =============================================
-// إضافة CSS للتحسينات
-addAdditionalStyles();
-addMobileOptimizationsCSS();
-
 // تشغيل vibration إذا متاح
 if (isTouchDevice) {
     window.addEventListener('load', function() {
-        // تأخير بسيط لتحسين الأداء
         setTimeout(vibrateIfSupported, 500);
     });
 }
@@ -1802,4 +1918,4 @@ setInterval(() => {
             console.warn('⚠️ استخدام عالي للذاكرة:', usedMB + 'MB / ' + totalMB + 'MB');
         }
     }
-}, 30000); // كل 30 ثانية
+}, 30000);
