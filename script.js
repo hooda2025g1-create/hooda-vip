@@ -823,45 +823,19 @@ function setupModalTouchHandling() {
     if (!isTouchDevice) return;
     
     const modal = document.getElementById('examplesModal');
+    if (!modal) return;
+    
+    // تحسين اللمس للمحتوى
     const modalBody = modal.querySelector('.modal-body');
-    
-    if (!modal || !modalBody) return;
-    
-    modalBody.style.cssText = `
-        overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        max-height: 65vh;
-        padding-bottom: 30px;
-        will-change: transform;
-    `;
-    
-    document.removeEventListener('touchmove', preventModalBackgroundScroll);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-}
-
-function handleTouchMove(e) {
-    if (!isModalOpen) return;
-    
-    const modal = document.getElementById('examplesModal');
-    const modalBody = modal.querySelector('.modal-body');
-    
-    const isInModalContent = e.target.closest('.modal-content');
-    
-    if (!isInModalContent) {
-        e.preventDefault();
-        return;
-    }
-    
-    if (isInModalContent) {
-        const content = modalBody;
-        const isAtTop = content.scrollTop === 0;
-        const isAtBottom = content.scrollHeight - content.scrollTop <= content.clientHeight + 1;
-        
-        if ((isAtTop && e.touches[0].clientY > touchStartY && touchStartY - e.touches[0].clientY < -10) || 
-            (isAtBottom && e.touches[0].clientY < touchStartY && touchStartY - e.touches[0].clientY > 10)) {
-            e.preventDefault();
-        }
+    if (modalBody) {
+        modalBody.style.cssText = `
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            max-height: 65vh;
+            padding-bottom: 30px;
+            will-change: transform;
+        `;
     }
 }
 
@@ -917,16 +891,12 @@ function createExampleCard(example) {
             const touchDuration = touchEndTime - cardTouchStartTime;
             
             if (!cardIsMoving && touchDuration < TOUCH_TIME_THRESHOLD) {
-                setTimeout(() => {
-                    if (!cardIsMoving) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        selectExample(example);
-                        
-                        this.classList.add('click-effect');
-                        setTimeout(() => this.classList.remove('click-effect'), 300);
-                    }
-                }, 50);
+                e.preventDefault();
+                e.stopPropagation();
+                selectExample(example);
+                
+                this.classList.add('click-effect');
+                setTimeout(() => this.classList.remove('click-effect'), 300);
             }
             
             this.classList.remove('touch-active');
@@ -950,6 +920,7 @@ function createExampleCard(example) {
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
             overflow: hidden;
+            cursor: pointer;
         `;
         
     } else {
@@ -989,25 +960,220 @@ function selectExample(example) {
     saveCurrentCode();
 }
 
+// إصلاح مشكلة زر الإغلاق
 function closeExamplesModal() {
     const modal = document.getElementById('examplesModal');
     if (!modal) return;
     
-    if (isTouchDevice) {
-        const modalContent = modal.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.removeEventListener('touchstart', handleModalTouchStart);
-            modalContent.removeEventListener('touchmove', handleModalTouchMove);
-            modalContent.removeEventListener('touchend', handleModalTouchEnd);
-        }
-        document.removeEventListener('touchmove', preventModalBackgroundScroll);
-    }
+    console.log('إغلاق النافذة...');
     
+    // إزالة مستمع اللمس إذا كان موجوداً
+    document.removeEventListener('touchmove', handleTouchMove);
+    
+    // إخفاء النافذة مع تأثير
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
     modal.classList.remove('fade-in');
     
+    // إعادة تعيين المتغيرات
     isModalOpen = false;
+}
+
+// =============================================
+// 15. وظائف إعداد واجهة المستخدم
+// =============================================
+function createExamplesModal() {
+    if (document.getElementById('examplesModal')) return;
+    
+    const modalHTML = `
+    <div id="examplesModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-code"></i> مكتبة الأمثلة (${examplesLibrary.length} مثال)</h2>
+                <button class="close-modal" onclick="closeExamplesModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="examplesContainer">
+                <!-- الأمثلة ستظهر هنا -->
+            </div>
+        </div>
+    </div>`;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    setupModalCloseEvents();
+}
+
+function setupModalCloseEvents() {
+    const modal = document.getElementById('examplesModal');
+    if (!modal) return;
+    
+    // إغلاق بالزر
+    const closeBtn = modal.querySelector('.close-modal');
+    if (closeBtn) {
+        // إزالة أي مستمعين سابقين وإضافة جديد
+        closeBtn.replaceWith(closeBtn.cloneNode(true));
+        const newCloseBtn = modal.querySelector('.close-modal');
+        
+        newCloseBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeExamplesModal();
+        });
+    }
+    
+    // إغلاق بالنقر خارج النافذة
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeExamplesModal();
+        }
+    });
+}
+
+// =============================================
+// إضافة هذه الدالة الجديدة في النهاية
+// =============================================
+function initModalCloseFix() {
+    if (!isTouchDevice) return;
+    
+    // تحسين النقر على زر الإغلاق للجوال
+    const modal = document.getElementById('examplesModal');
+    if (!modal) return;
+    
+    const closeBtn = modal.querySelector('.close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+            this.style.transform = 'scale(0.9)';
+            this.style.opacity = '0.8';
+        }, { passive: true });
+        
+        closeBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.transform = 'scale(1)';
+            this.style.opacity = '1';
+            closeExamplesModal();
+        }, { passive: false });
+        
+        closeBtn.addEventListener('touchcancel', function() {
+            this.style.transform = 'scale(1)';
+            this.style.opacity = '1';
+        }, { passive: true });
+    }
+}
+
+// =============================================
+// تحديث تهيئة النظام
+// =============================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("✅ مشغل JavaScript جاهز!");
+    
+    initializeSystem();
+    setupEventListeners();
+    loadSavedCode();
+    
+    // إضافة التحسينات الجديدة
+    enhanceMobileModalExperience();
+    setupSmoothScrolling();
+    setupAdditionalLoaders();
+    
+    // تحسينات إضافية للجوال
+    if (isTouchDevice) {
+        document.body.classList.add('mobile-optimized');
+        setupTouchControls();
+        initModalCloseFix(); // إضافة هذا السطر
+    }
+});
+
+// =============================================
+// تحديث CSS للإصلاح
+// =============================================
+function addAdditionalStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* تحسينات إضافية للجوال */
+        @media (max-width: 767px) {
+            .modal-overlay {
+                padding: 0;
+                align-items: flex-end;
+                z-index: 10000;
+            }
+            
+            .modal-content {
+                width: 100%;
+                max-height: 85vh;
+                border-radius: 24px 24px 0 0 !important;
+                animation: slideUp 0.3s ease-out;
+                margin: 0;
+                overflow: hidden;
+                position: relative;
+                z-index: 10001;
+            }
+            
+            @keyframes slideUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            
+            .modal-body {
+                max-height: 65vh;
+                padding-bottom: 30px;
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* إصلاح زر الإغلاق */
+            .close-modal {
+                width: 44px;
+                height: 44px;
+                font-size: 24px;
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10002;
+                border: none;
+                cursor: pointer;
+                color: white;
+                transition: all 0.2s;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .close-modal:active {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(0.9);
+            }
+            
+            .modal-header h2 {
+                padding: 0 50px;
+                text-align: center;
+                font-size: 20px;
+            }
+            
+            /* تحسين بطاقات الأمثلة */
+            .example-card {
+                margin: 10px 0;
+                border-radius: 16px !important;
+                border: 1px solid #e0e0e0;
+                background: white;
+                padding: 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                transition: all 0.2s;
+            }
+            
+            .example-card:active {
+                transform: scale(0.98);
+                background: #f8f9fa;
+            }
+        }
+    `;
+    
+    document.head.appendChild(style);
 }
 
 // =============================================
