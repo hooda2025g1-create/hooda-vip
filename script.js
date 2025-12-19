@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // =============================================
-// 4. وظائف شاشة الترحيب (محسنة)
+// 4. وظائف شاشة الترحيب
 // =============================================
 function initializeWelcomeScreen() {
     const welcomeScreen = document.getElementById('welcomeScreen');
@@ -579,16 +579,16 @@ function initializeWelcomeScreen() {
     const hasVisitedBefore = localStorage.getItem('hasVisitedBefore');
     
     if (hasVisitedBefore) {
-        // إذا زار من قبل، تظهر الشاشة لفترة متوسطة
+        // إذا زار من قبل، تظهر الشاشة لفترة قصيرة فقط
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 5500); // زيادة المدة من 1500 إلى 2500
+        }, 5000);
     } else {
         // أول زيارة، تظهر لفترة أطول
         localStorage.setItem('hasVisitedBefore', 'true');
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 4000); // زيادة المدة من 3000 إلى 4000
+        }, 7000);
     }
     
     // إضافة تأثيرات تفاعلية إضافية
@@ -700,48 +700,6 @@ function initializeSystem() {
     
     // تهيئة وضع الثيم
     initializeTheme();
-    
-    // إصلاح مشاكل التخطيط للجوال
-    fixMobileLayout();
-}
-
-// إضافة دالة جديدة لإصلاح تخطيط الجوال
-function fixMobileLayout() {
-    if (!isTouchDevice) return;
-    
-    // تأخير تحسينات الجوال قليلاً
-    setTimeout(() => {
-        // إصلاح مسافات النصوص
-        const textElements = document.querySelectorAll('p, h1, h2, h3, h4, span, li');
-        textElements.forEach(el => {
-            if (el.textContent && el.textContent.trim() !== '') {
-                el.style.wordBreak = 'break-word';
-                el.style.overflowWrap = 'break-word';
-            }
-        });
-        
-        // إصلاح مسافات أزرار التحكم
-        const controlBtns = document.querySelectorAll('.control-btn');
-        controlBtns.forEach(btn => {
-            btn.style.margin = '2px';
-            btn.style.minHeight = '44px';
-        });
-        
-        // إصلاح منطقة النتيجة
-        const outputLines = document.querySelectorAll('.output-line');
-        outputLines.forEach(line => {
-            line.style.margin = '6px 0';
-            line.style.padding = '8px 10px';
-            line.style.fontSize = '14px';
-        });
-        
-        // تحسين مسافات العناصر
-        const sections = document.querySelectorAll('.footer-section, .team-item, .feature');
-        sections.forEach(section => {
-            section.style.marginBottom = '8px';
-        });
-        
-    }, 500);
 }
 
 function setupEventListeners() {
@@ -771,12 +729,12 @@ function adjustEditorSize() {
     if (!editor || !output) return;
     
     if (window.innerWidth < 768) {
-        editor.style.minHeight = '350px';
-        output.style.minHeight = '350px';
+        editor.style.minHeight = '250px';
+        output.style.minHeight = '200px';
     } else {
         const availableHeight = window.innerHeight - 250;
-        editor.style.minHeight = Math.max(400, availableHeight) + 'px';
-        output.style.minHeight = Math.max(400, availableHeight) + 'px';
+        editor.style.minHeight = Math.max(300, availableHeight) + 'px';
+        output.style.minHeight = Math.max(300, availableHeight) + 'px';
     }
 }
 
@@ -801,7 +759,7 @@ function handleCodeInput() {
 }
 
 // =============================================
-// 7. وظائف تشغيل الكود (محسنة)
+// 7. وظائف تشغيل الكود
 // =============================================
 function runCode() {
     if (isRunning) {
@@ -905,7 +863,7 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
     allOutputs.forEach(outputType => {
         if (outputType.data.length > 0) {
             html += `
-                <div class="${outputType.className} message" style="margin-bottom: 10px; padding: 10px; border-radius: 8px;">
+                <div class="${outputType.className} message">
                     <i class="fas fa-${outputType.icon}"></i>
                     <strong>${outputType.title} (${outputType.data.length})</strong>
                 </div>
@@ -913,7 +871,7 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
             
             outputType.data.forEach(item => {
                 html += `
-                    <div class="output-line" style="border-left-color: ${outputType.color}; margin: 6px 0; padding: 8px 12px;">
+                    <div class="output-line" style="border-left-color: ${outputType.color}">
                         ${item.args.map(arg => formatOutput(arg)).join(' ')}
                     </div>
                 `;
@@ -925,10 +883,10 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
     
     if (result !== undefined) {
         html += `
-            <div class="success message pulse" style="margin: 15px 0; padding: 12px; border-radius: 8px;">
+            <div class="success message pulse">
                 <i class="fas fa-arrow-right"></i>
                 <strong>القيمة المعادة:</strong>
-                <div class="return-value" style="margin-top: 8px; padding: 10px;">
+                <div class="return-value">
                     ${formatOutput(result)}
                 </div>
             </div>
@@ -937,57 +895,47 @@ function displayResults(logs, errors, warnings, infos, result, outputElement) {
     
     const totalOutputs = logs.length + errors.length + warnings.length + infos.length;
     html += `
-        <div class="statistics" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+        <div class="statistics">
             <strong>📊 الإحصائيات:</strong>
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                <span style="color: #10b981; padding: 5px; background: rgba(16, 185, 129, 0.1); border-radius: 4px; text-align: center;">✅ ${logs.length} إخراج</span>
-                <span style="color: #ef4444; padding: 5px; background: rgba(239, 68, 68, 0.1); border-radius: 4px; text-align: center;">❌ ${errors.length} خطأ</span>
-                <span style="color: #f59e0b; padding: 5px; background: rgba(245, 158, 11, 0.1); border-radius: 4px; text-align: center;">⚠️ ${warnings.length} تحذير</span>
-                <span style="color: #06b6d4; padding: 5px; background: rgba(6, 182, 212, 0.1); border-radius: 4px; text-align: center;">ℹ️ ${infos.length} معلومات</span>
+            <div class="stats-grid">
+                <span style="color: #10b981;">✅ ${logs.length} إخراج</span>
+                <span style="color: #ef4444;">❌ ${errors.length} خطأ</span>
+                <span style="color: #f59e0b;">⚠️ ${warnings.length} تحذير</span>
+                <span style="color: #06b6d4;">ℹ️ ${infos.length} معلومات</span>
             </div>
         </div>
     `;
     
     outputElement.innerHTML = html;
     outputElement.scrollTop = 0;
-    
-    // إصلاح التخطيط بعد عرض النتائج
-    if (isTouchDevice) {
-        setTimeout(fixMobileLayout, 100);
-    }
 }
 
 function displayError(error, outputElement) {
     const html = `
-        <div class="error message slide-in" style="margin-bottom: 15px; padding: 12px; border-radius: 8px;">
+        <div class="error message slide-in">
             <i class="fas fa-bug"></i>
             <strong>حدث خطأ!</strong>
-            <p style="margin-top: 5px;">${error.name}: ${error.message}</p>
+            <p>${error.name}: ${error.message}</p>
         </div>
         
-        <div class="error-details" style="background: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+        <div class="error-details">
             <strong>تفاصيل الخطأ:</strong>
-            <pre style="margin-top: 5px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word;">${error.stack || 'لا توجد تفاصيل إضافية'}</pre>
+            <pre>${error.stack || 'لا توجد تفاصيل إضافية'}</pre>
         </div>
         
-        <div class="info message" style="padding: 12px; border-radius: 8px;">
+        <div class="info message">
             <i class="fas fa-lightbulb"></i>
             <strong>نصائح للحل:</strong>
-            <ul style="margin-top: 5px; padding-right: 20px;">
-                <li style="margin-bottom: 3px;">تأكد من صيغة الكود</li>
-                <li style="margin-bottom: 3px;">تحقق من الأقواس والنقاط</li>
-                <li style="margin-bottom: 3px;">تأكد من تعريف المتغيرات قبل استخدامها</li>
-                <li style="margin-bottom: 3px;">تحقق من أسماء الدوال والمتغيرات</li>
+            <ul>
+                <li>تأكد من صيغة الكود</li>
+                <li>تحقق من الأقواس والنقاط</li>
+                <li>تأكد من تعريف المتغيرات قبل استخدامها</li>
+                <li>تحقق من أسماء الدوال والمتغيرات</li>
             </ul>
         </div>
     `;
     
     outputElement.innerHTML = html;
-    
-    // إصلاح التخطيط بعد عرض الخطأ
-    if (isTouchDevice) {
-        setTimeout(fixMobileLayout, 100);
-    }
 }
 
 // =============================================
@@ -1214,7 +1162,6 @@ function createMessageElement(text, type) {
             left: 10px;
             padding: 12px;
             font-size: 14px;
-            max-width: calc(100% - 20px);
         ` : `
             top: 20px;
             right: 20px;
@@ -1222,20 +1169,19 @@ function createMessageElement(text, type) {
             padding: 15px;
         `}
         z-index: 10000;
-        animation: fadeIn 0.3s ease-out;
-        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         border-radius: ${isTouchDevice ? '12px' : '8px'};
-        text-align: ${isTouchDevice ? 'center' : 'right'};
+        text-align: ${isTouchDevice ? 'center' : 'left'};
         display: flex;
         align-items: center;
         gap: 10px;
         backdrop-filter: blur(10px);
-        word-break: break-word;
     `;
     
     message.innerHTML = `
-        <i class="fas fa-${icon}" style="font-size: ${isTouchDevice ? '18px' : '20px'};"></i>
-        <span style="flex: 1;">${text}</span>
+        <i class="fas fa-${icon}" style="font-size: 20px;"></i>
+        <span>${text}</span>
     `;
     
     return message;
@@ -1330,6 +1276,14 @@ function animateButton(selector, animationClass) {
     setTimeout(() => button.classList.remove(animationClass), 300);
 }
 
+function animateElement(selector, animationClass) {
+    const element = document.querySelector(selector);
+    if (!element) return;
+    
+    element.classList.add(animationClass);
+    setTimeout(() => element.classList.remove(animationClass), 2000);
+}
+
 function updateStatus(text, color) {
     const statusElement = document.getElementById('status');
     if (!statusElement) return;
@@ -1367,7 +1321,7 @@ function formatOutput(value) {
                 const json = JSON.stringify(value, null, 2)
                     .replace(/\n/g, '<br>')
                     .replace(/ /g, '&nbsp;');
-                return `<pre class="object-value" style="margin: 0; padding: 5px; background: rgba(0,0,0,0.05); border-radius: 4px; font-size: 13px; overflow-x: auto;">${json}</pre>`;
+                return `<pre class="object-value">${json}</pre>`;
             } catch {
                 return `<span class="object-value">${String(value)}</span>`;
             }
@@ -1378,7 +1332,7 @@ function formatOutput(value) {
 }
 
 // =============================================
-// 14. وظائف مساعدة إضافية (محسنة)
+// 14. وظائف مساعدة إضافية
 // =============================================
 function clearCode() {
     if (!confirm('هل تريد مسح الكود؟')) return;
@@ -1396,9 +1350,9 @@ function clearCode() {
                 <i class="fas fa-code"></i>
             </div>
             <div class="message-content">
-                <h3 style="margin-bottom: 8px;">مرحباً في مشغل JavaScript! 👋</h3>
-                <p style="margin-bottom: 6px;">اكتب كود JavaScript في المحرر واضغط على زر "تشغيل الكود" لتنفيذه.</p>
-                <p style="margin-bottom: 10px;">يمكنك استخدام مكتبة الأمثلة لتحميل أمثلة جاهزة.</p>
+                <h3>مرحباً في مشغل JavaScript! 👋</h3>
+                <p>اكتب كود JavaScript في المحرر على اليسار واضغط على زر "تشغيل الكود" لتنفيذه.</p>
+                <p>يمكنك استخدام مكتبة الأمثلة لتحميل أمثلة جاهزة.</p>
                 <div class="tip">
                     <strong>💡 نصيحة:</strong> اضغط Ctrl+Enter لتشغيل الكود بسرعة
                 </div>
@@ -1459,17 +1413,12 @@ function clearCode() {
     
     updateStatus('جاهز', '#10b981');
     localStorage.removeItem('lastCode');
-    
-    // إصلاح التخطيط بعد المسح
-    if (isTouchDevice) {
-        setTimeout(fixMobileLayout, 100);
-    }
 }
 
 function showLoadingIndicator(element) {
     element.innerHTML = `
-        <div style="text-align: center; padding: 40px;">
-            <div style="width: 50px; height: 50px; border: 5px solid var(--bg-tertiary); border-top: 5px solid var(--primary-color); border-radius: 50%; margin: 0 auto 20px; animation: spin 1s linear infinite;"></div>
+        <div class="loading-indicator" style="text-align: center; padding: 40px;">
+            <div style="width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3b82f6; border-radius: 50%; margin: 0 auto 20px; animation: spin 1s linear infinite;"></div>
             <p style="color: var(--text-secondary);">جاري تنفيذ الكود...</p>
         </div>
     `;
@@ -1492,16 +1441,12 @@ function clearOutput() {
     if (!output) return;
     
     output.innerHTML = `
-        <div class="info message fade-in" style="padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div class="info message fade-in">
             <i class="fas fa-info-circle"></i>
-            <div>
-                <strong>النتيجة نظيفة</strong>
-                <p style="margin-top: 5px;">تشغيل كود جديد سيظهر النتائج هنا</p>
-            </div>
+            <strong>النتيجة نظيفة</strong>
+            <p>تشغيل كود جديد سيظهر النتائج هنا</p>
         </div>
     `;
-    
-    showMessage('تم مسح النتائج', 'info');
 }
 
 // =============================================
@@ -1569,6 +1514,9 @@ function setupModalCloseEvents() {
 }
 
 function addExamplesButton() {
+    const controls = document.querySelector('.editor-controls');
+    if (!controls) return;
+    
     // زر الأمثلة موجود بالفعل في HTML
 }
 
@@ -1601,7 +1549,7 @@ function addAdditionalStyles() {
                 overflow: hidden;
                 position: relative;
                 z-index: 10001;
-                background: var(--bg-primary);
+                background: white;
             }
             
             @keyframes slideUp {
@@ -1622,20 +1570,14 @@ function addAdditionalStyles() {
             .control-btn {
                 padding: 12px 16px !important;
                 font-size: 14px;
-                min-height: 44px;
             }
             
             .shortcut {
                 display: none;
             }
-            
-            .output-line {
-                font-size: 13px;
-                padding: 8px 10px;
-            }
         }
         
-        /* تحسينات عامة */
+        /* تحسينات للكمبيوتر أيضاً */
         .example-card {
             border-radius: 12px !important;
             transition: all 0.3s ease;
@@ -1649,6 +1591,12 @@ function addAdditionalStyles() {
         .control-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* تحسين الأداء */
+        .modal-body {
+            will-change: transform;
+            transform: translateZ(0);
         }
     `;
     
@@ -1683,8 +1631,8 @@ function addMobileOptimizationsCSS() {
         .mobile-optimized .control-btn {
             min-height: 48px;
             min-width: 48px;
-            padding: 14px 18px;
-            font-size: 15px;
+            padding: 14px 22px;
+            font-size: 16px;
             border-radius: 14px !important;
             touch-action: manipulation;
             user-select: none;
@@ -1699,15 +1647,22 @@ function addMobileOptimizationsCSS() {
         
         .mobile-optimized .example-card {
             padding: 18px;
-            margin: 10px 0;
-            border-radius: 16px !important;
-            transition: all 0.2s ease;
-            border: 1px solid var(--border-color);
+            margin: 12px 0;
+            border-radius: 18px !important;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid #e8e8e8;
+            background: white;
         }
         
         .mobile-optimized .example-card:active {
-            transform: scale(0.98);
-            background: rgba(59, 130, 246, 0.05);
+            transform: scale(0.97);
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+        }
+        
+        .mobile-optimized .modal-overlay {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+            backdrop-filter: blur(5px);
         }
         
         .mobile-optimized .modal-container {
@@ -1720,6 +1675,34 @@ function addMobileOptimizationsCSS() {
             padding-bottom: 30px;
         }
         
+        /* تحسين شريط التمرير للجوال */
+        .mobile-optimized ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .mobile-optimized ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #3b82f6, #2563eb);
+            border-radius: 4px;
+        }
+        
+        .mobile-optimized ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.8);
+        }
+        
+        /* تحسين التمرير اللطيف */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* تحسين الأداء */
+        .performance-optimized {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+        
         /* تحسينات للشاشات الصغيرة جداً */
         @media (max-width: 480px) {
             .control-btn {
@@ -1730,8 +1713,8 @@ function addMobileOptimizationsCSS() {
             }
             
             .example-card {
-                padding: 15px !important;
-                border-radius: 14px !important;
+                padding: 14px !important;
+                border-radius: 16px !important;
                 margin: 8px 0;
             }
             
@@ -1748,31 +1731,6 @@ function addMobileOptimizationsCSS() {
                 height: 36px !important;
                 font-size: 20px !important;
             }
-            
-            .welcome-name {
-                font-size: 2rem !important;
-            }
-            
-            .welcome-logo {
-                width: 80px !important;
-                height: 80px !important;
-            }
-        }
-        
-        /* تحسين التمرير اللطيف */
-        .smooth-scroll {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* منع تكبير النص على الجوال */
-        input, textarea, select {
-            font-size: 16px !important;
-        }
-        
-        /* تحسين المسافات */
-        .mobile-optimized p, .mobile-optimized li, .mobile-optimized span {
-            line-height: 1.5 !important;
         }
     `;
     
@@ -1785,12 +1743,14 @@ function addMobileOptimizationsCSS() {
 function setupTouchControls() {
     if (!isTouchDevice) return;
     
-    const buttons = document.querySelectorAll('.control-btn, .example-item, .example-card');
+    const buttons = document.querySelectorAll('.control-btn');
     buttons.forEach(btn => {
         btn.style.cssText = `
             min-height: 44px;
             min-width: 44px;
-            border-radius: 12px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 16px;
             touch-action: manipulation;
             user-select: none;
             -webkit-user-select: none;
@@ -1798,7 +1758,7 @@ function setupTouchControls() {
         `;
         
         btn.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.98)';
+            this.style.transform = 'scale(0.95)';
             this.style.opacity = '0.9';
         });
         
@@ -1844,12 +1804,6 @@ function initializeTheme() {
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
-            // تأثير للزر
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
         });
 
         // تحميل الثيم المحفوظ
@@ -1865,8 +1819,6 @@ function initializeTheme() {
 if (isTouchDevice) {
     window.addEventListener('load', function() {
         setTimeout(vibrateIfSupported, 500);
-        // إصلاح التخطيط بعد التحميل الكامل
-        setTimeout(fixMobileLayout, 1000);
     });
 }
 
@@ -1874,16 +1826,10 @@ if (isTouchDevice) {
 console.log('🚀 نظام مشغل JavaScript جاهز للعمل مع تحسينات الجوال المتقدمة!');
 console.log('📱 وضع الجهاز:', isTouchDevice ? 'جوال' : 'كمبيوتر');
 console.log('🖥️ حجم الشاشة:', window.innerWidth + 'x' + window.innerHeight);
-console.log('🎨 شاشة الترحيب: محسنة مع أنيميشن أطول');
-console.log('✨ التعديلات: أنيميشن أطول + تحسينات الجوال + إصلاح المسافات');
 
 // تحسين أداء التنفيذ
 if (window.requestIdleCallback) {
     requestIdleCallback(() => {
         console.log('⚡ تحسينات الأداء جاهزة');
-        // تحسينات إضافية للجوال
-        if (isTouchDevice) {
-            document.body.classList.add('mobile-enhanced');
-        }
     });
 }

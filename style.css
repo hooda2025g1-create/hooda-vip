@@ -172,6 +172,16 @@
     to { transform: rotate(360deg); }
 }
 
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blinkCursor {
+    from, to { border-color: transparent; }
+    50% { border-color: var(--accent-color); }
+}
+
 @keyframes gradientShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -181,6 +191,12 @@
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
+}
+
+@keyframes wave {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
 }
 
 /* ====== شاشة الترحيب ====== */
@@ -209,7 +225,7 @@
     color: white;
     transform: translateY(20px);
     opacity: 0;
-    animation: welcomeContentIn 1.5s ease 0.3s forwards;
+    animation: welcomeContentIn 1.2s ease 0.3s forwards;
 }
 
 @keyframes welcomeContentIn {
@@ -234,13 +250,13 @@
     margin: 0 auto 30px;
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    animation: float 4s ease-in-out infinite;
+    animation: float 3s ease-in-out infinite;
 }
 
 .welcome-logo i {
     font-size: 48px;
     color: white;
-    animation: spin 25s linear infinite;
+    animation: spin 20s linear infinite;
 }
 
 .name-container {
@@ -256,19 +272,15 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: gradientShift 5s ease infinite, nameReveal 2s ease forwards;
+    animation: gradientShift 3s ease infinite, nameReveal 1.5s ease forwards;
     position: relative;
     overflow: hidden;
 }
 
 @keyframes nameReveal {
     0% {
-        letter-spacing: 25px;
+        letter-spacing: 20px;
         opacity: 0;
-    }
-    50% {
-        letter-spacing: 10px;
-        opacity: 0.5;
     }
     100% {
         letter-spacing: normal;
@@ -285,7 +297,7 @@
     width: 0;
     height: 3px;
     background: white;
-    animation: underlineExpand 1.5s ease 1.5s forwards;
+    animation: underlineExpand 1s ease 1s forwards;
 }
 
 @keyframes underlineExpand {
@@ -300,7 +312,7 @@
 .welcome-subtitle {
     font-size: 1.2rem;
     opacity: 0;
-    animation: subtitleFadeIn 1.2s ease 2s forwards;
+    animation: subtitleFadeIn 1s ease 1.5s forwards;
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -323,7 +335,7 @@
     margin: 30px auto;
     overflow: hidden;
     opacity: 0;
-    animation: loadingBarAppear 0.8s ease 2.5s forwards;
+    animation: loadingBarAppear 0.5s ease 2s forwards;
 }
 
 @keyframes loadingBarAppear {
@@ -342,7 +354,7 @@
     width: 0;
     background: linear-gradient(90deg, #fff, #f0f0f0);
     border-radius: 2px;
-    animation: loadingProgress 3s ease 3s forwards;
+    animation: loadingProgress 2s ease 2.5s forwards;
 }
 
 @keyframes loadingProgress {
@@ -373,7 +385,6 @@ body {
     overflow-x: hidden;
     transition: background-color var(--transition-normal),
                 color var(--transition-normal);
-    -webkit-tap-highlight-color: transparent;
 }
 
 /* ====== زر تبديل الثيم ====== */
@@ -382,8 +393,6 @@ body {
     top: 20px;
     right: 20px;
     z-index: 1000;
-    opacity: 0;
-    animation: fadeIn 0.8s ease 4.5s forwards;
 }
 
 .theme-toggle-btn {
@@ -677,7 +686,7 @@ body {
 }
 
 .control-btn {
-    padding: 12px 18px;
+    padding: 10px 20px;
     border: none;
     border-radius: 10px;
     font-weight: 600;
@@ -686,14 +695,38 @@ body {
     align-items: center;
     gap: 8px;
     transition: all var(--transition-fast);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     position: relative;
     overflow: hidden;
-    min-height: 44px;
 }
 
-.control-btn i {
-    font-size: 16px;
+.control-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 50%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.control-btn:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(40, 40);
+        opacity: 0;
+    }
 }
 
 .run-btn {
@@ -748,7 +781,6 @@ body {
 .editor-body {
     display: flex;
     flex-direction: column;
-    min-height: 400px;
     height: 500px;
 }
 
@@ -822,7 +854,6 @@ body {
     overflow: hidden;
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
-    min-height: 400px;
     height: 500px;
     display: flex;
     flex-direction: column;
@@ -883,37 +914,6 @@ body {
     overflow-y: auto;
     padding: 20px;
     background: var(--bg-secondary);
-    -webkit-overflow-scrolling: touch;
-}
-
-#output {
-    min-height: 100%;
-}
-
-.output-line {
-    margin: 8px 0;
-    padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.03);
-    border-left: 3px solid #10b981;
-    border-radius: 6px;
-    line-height: 1.5;
-    word-break: break-word;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-}
-
-[data-theme="dark"] .output-line {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.return-value {
-    margin-top: 8px;
-    padding: 10px;
-    background: rgba(16, 185, 129, 0.1);
-    border-radius: 6px;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
 }
 
 .welcome-message {
@@ -942,21 +942,20 @@ body {
 
 .message-content h3 {
     font-size: 1.5rem;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     color: var(--text-primary);
 }
 
 .message-content p {
     color: var(--text-secondary);
-    margin-bottom: 10px;
-    line-height: 1.6;
+    margin-bottom: 8px;
 }
 
 .tip {
     background: rgba(59, 130, 246, 0.1);
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-top: 10px;
     border-left: 3px solid var(--primary-color);
 }
 
@@ -971,13 +970,12 @@ body {
     align-items: center;
     gap: 10px;
     color: var(--text-primary);
-    font-size: 1.2rem;
 }
 
 .examples-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 10px;
 }
 
 @media (min-width: 768px) {
@@ -1007,12 +1005,12 @@ body {
 }
 
 .example-item i {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: var(--primary-color);
 }
 
 .example-item span {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
 }
 
@@ -1026,13 +1024,12 @@ body {
     align-items: center;
     gap: 10px;
     color: var(--text-primary);
-    font-size: 1.2rem;
 }
 
 .features-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .feature {
@@ -1093,7 +1090,6 @@ body {
 .footer-section p {
     color: var(--text-secondary);
     margin-bottom: 15px;
-    line-height: 1.6;
 }
 
 .social-links {
@@ -1126,10 +1122,9 @@ body {
 }
 
 .team-credits li {
-    padding: 10px 0;
+    padding: 8px 0;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--border-color);
-    line-height: 1.5;
 }
 
 .team-credits li:last-child {
@@ -1324,7 +1319,6 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 768px) {
@@ -1482,101 +1476,29 @@ body {
 
 /* ====== تصميم متجاوب ====== */
 @media (max-width: 768px) {
-    body {
-        font-size: 14px;
-    }
-    
-    .header-title {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 10px;
+    .developer-name {
+        font-size: 2.5rem;
     }
     
     .header-title h1 {
         font-size: 1.8rem;
-        text-align: center;
-        width: 100%;
-    }
-    
-    .header-info {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .developer-card, .idea-creator {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .team-list {
-        justify-content: center;
-    }
-    
-    .editor-header {
-        flex-direction: column;
     }
     
     .editor-controls {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 5px;
-        justify-content: flex-start;
-        width: 100%;
-        -webkit-overflow-scrolling: touch;
+        justify-content: center;
     }
     
     .control-btn {
-        padding: 10px 15px;
-        font-size: 14px;
-        min-height: 44px;
+        padding: 8px 15px;
+        font-size: 0.85rem;
     }
     
     .shortcut {
         display: none;
     }
     
-    .editor-body, .output-body {
-        min-height: 350px;
-    }
-    
-    #code-input {
-        font-size: 14px;
-        padding: 15px;
-    }
-    
-    .welcome-message {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-        padding: 20px;
-    }
-    
-    .message-icon {
-        width: 50px;
-        height: 50px;
-        margin: 0 auto;
-    }
-    
-    .message-content h3 {
-        font-size: 1.3rem;
-    }
-    
     .examples-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-    
-    .features-list {
-        gap: 8px;
-    }
-    
-    .feature {
-        padding: 10px 12px;
-    }
-    
-    .feature span {
-        font-size: 14px;
     }
     
     .footer-section {
@@ -1587,7 +1509,7 @@ body {
         justify-content: center;
     }
     
-    .platforms {
+    .team-list {
         justify-content: center;
     }
     
@@ -1615,6 +1537,53 @@ body {
 }
 
 @media (max-width: 480px) {
+    .developer-name {
+        font-size: 2rem;
+    }
+    
+    .developer-title {
+        font-size: 1.2rem;
+    }
+    
+    .logo-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .logo-icon {
+        font-size: 32px;
+    }
+    
+    .team-members {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .editor-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .control-btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .examples-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        max-width: none;
+    }
+    
+    /* تحسينات شاشة الترحيب للجوال الصغير */
     .welcome-name {
         font-size: 2rem;
     }
@@ -1631,63 +1600,10 @@ body {
     
     .welcome-subtitle {
         font-size: 0.9rem;
-        padding: 0 15px;
     }
     
     .loading-bar {
-        width: 150px;
-    }
-    
-    .header-title h1 {
-        font-size: 1.5rem;
-    }
-    
-    .team-item {
-        width: 100%;
-        max-width: 250px;
-    }
-    
-    .editor-controls {
-        gap: 5px;
-    }
-    
-    .control-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-        min-height: 40px;
-    }
-    
-    .control-btn i {
-        font-size: 14px;
-    }
-    
-    .run-btn span, .examples-btn span, .save-btn span, .clear-btn span {
-        font-size: 12px;
-    }
-    
-    .examples-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .modal-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .search-box {
-        max-width: none;
-    }
-    
-    .modal-container {
-        width: 95%;
-        max-height: 85vh;
-        border-radius: 15px;
-    }
-    
-    .modal-header h2 {
-        font-size: 1.5rem;
-        flex-direction: column;
-        gap: 10px;
+        width: 120px;
     }
 }
 
@@ -1729,14 +1645,9 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    animation: fadeIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+    animation: slideInLeft 0.3s ease, slideOutDown 0.3s ease 2.7s;
     animation-fill-mode: forwards;
     max-width: 400px;
-}
-
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateX(0); }
-    to { opacity: 0; transform: translateX(100%); }
 }
 
 .temp-message.success {
@@ -1781,40 +1692,3 @@ body {
 .feature:nth-child(3) { animation-delay: 0.3s; }
 .feature:nth-child(4) { animation-delay: 0.4s; }
 .feature:nth-child(5) { animation-delay: 0.5s; }
-
-/* ====== تحسينات أنيميشن الجوال ====== */
-@media (max-width: 768px) {
-    /* إبطاء أنيميشن الشعار للجوال */
-    .welcome-logo {
-        animation: float 5s ease-in-out infinite; /* زيادة من 4 إلى 5 ثواني */
-    }
-    
-    .welcome-logo i {
-        animation: spin 30s linear infinite; /* إبطاء الدوران */
-    }
-    
-    .welcome-name {
-        animation: gradientShift 6s ease infinite, nameReveal 2.5s ease forwards;
-        /* زيادة مدة تدرج اللون */
-    }
-    
-    .welcome-name::after {
-        animation: underlineExpand 2s ease 1.8s forwards;
-        /* زيادة مدة الخط وتأخيره أكثر */
-    }
-    
-    .welcome-subtitle {
-        animation: subtitleFadeIn 1.5s ease 2.5s forwards;
-        /* زيادة المدة والتأخير */
-    }
-    
-    .loading-bar {
-        animation: loadingBarAppear 1s ease 3s forwards;
-        /* زيادة المدة والتأخير */
-    }
-    
-    .loading-progress {
-        animation: loadingProgress 4s ease 3.5s forwards;
-        /* زيادة مدة التحميل */
-    }
-}
