@@ -114,6 +114,8 @@
             justify-content: center;
             gap: 12px;
             transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
         }
         
         .btn-primary {
@@ -137,24 +139,29 @@
             color: white;
         }
         
-        .guest-option {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+        .btn-guest {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            border: 2px solid #ff9800;
         }
         
-        .guest-link {
-            color: #1a2980;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .btn-guest:hover {
+            background: linear-gradient(135deg, #ff5722, #ff9800);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 87, 34, 0.3);
         }
         
-        .guest-link:hover {
-            text-decoration: underline;
+        .guest-notice {
+            background: #fff3e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .guest-notice i {
+            color: #ff9800;
+            margin-left: 8px;
         }
         
         @media (max-width: 768px) {
@@ -183,9 +190,9 @@
             <ul class="features">
                 <li><i class="fas fa-check-circle"></i> تشغيل كود JavaScript مباشرة</li>
                 <li><i class="fas fa-check-circle"></i> مكتبة أمثلة تعليمية متدرجة</li>
-                <li><i class="fas fa-check-circle"></i> حفظ الكود واسترجاعه تلقائياً</li>
                 <li><i class="fas fa-check-circle"></i> واجهة مستخدم عربية متكاملة</li>
                 <li><i class="fas fa-check-circle"></i> مناسب للمبتدئين والمحترفين</li>
+                <li><i class="fas fa-play-circle"></i> <strong>تجربة فورية</strong> بدون تسجيل</li>
             </ul>
         </div>
         
@@ -195,50 +202,48 @@
             <p>اختر طريقة الدخول لبدء استخدام المحرر</p>
             
             <div class="auth-buttons">
-                <button class="auth-btn btn-primary" onclick="goToRegister()">
-                    <i class="fas fa-user-plus"></i> إنشاء حساب جديد
-                </button>
+                <!-- زر الدخول كزائر (يعمل مباشرة) -->
+                <a href="3_editor.html" class="auth-btn btn-guest" onclick="setGuestMode()">
+                    <i class="fas fa-bolt"></i> دخول سريع كزائر
+                </a>
                 
-                <!-- الزر المعدل: يذهب مباشرة إلى login.html -->
-                <a href="login.html" class="auth-btn btn-secondary" style="text-decoration: none; text-align: center;">
+                <!-- زر إنشاء حساب -->
+                <a href="2_register.html" class="auth-btn btn-primary">
+                    <i class="fas fa-user-plus"></i> إنشاء حساب جديد
+                </a>
+                
+                <!-- زر تسجيل الدخول -->
+                <a href="login.html" class="auth-btn btn-secondary">
                     <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
                 </a>
             </div>
             
-            <div class="guest-option">
-                <p>تريد التجربة أولاً؟</p>
-                <a href="#" class="guest-link" onclick="enterAsGuest()">
-                    <i class="fas fa-play-circle"></i> دخول كزائر (بدون تسجيل)
-                </a>
+            <div class="guest-notice">
+                <i class="fas fa-info-circle"></i>
+                <strong>ملاحظة للزائر:</strong> يمكنك التجربة فوراً، لكن الكود الذي تكتبه <strong>لن يتم حفظه</strong>.
+                للتخزين الدائم، أنشئ حساباً مجانياً.
             </div>
         </div>
     </div>
 
     <script>
-        function goToRegister() {
-            window.location.href = '2_register.html';
-        }
-        
-        // تم إزالة goToLogin() القديمة لأننا نستخدم رابط مباشر الآن
-        
-        function enterAsGuest() {
+        // تحديد أن المستخدم زائر
+        function setGuestMode() {
             localStorage.setItem('user_type', 'guest');
             localStorage.setItem('user_name', 'زائر');
-            window.location.href = '3_editor.html';
+            localStorage.removeItem('lastCode'); // إزالة أي كود قديم
         }
         
-        // تحميل المستخدم المسجل مسبقاً إذا كان موجوداً
+        // إذا كان هناك مستخدم مسجل مسبقاً، عرض خيار المتابعة
         document.addEventListener('DOMContentLoaded', function() {
             const userType = localStorage.getItem('user_type');
             const userName = localStorage.getItem('user_name');
             
             if (userType === 'registered' && userName) {
-                // عرض رسالة ترحيبية
-                console.log(`مرحباً بعودتك ${userName}!`);
-                
-                // إضافة خيار "متابعة كـ [الاسم]"
+                // إضافة زر "متابعة كـ [الاسم]"
                 const authButtons = document.querySelector('.auth-buttons');
-                const continueBtn = document.createElement('button');
+                const continueBtn = document.createElement('a');
+                continueBtn.href = '3_editor.html';
                 continueBtn.className = 'auth-btn';
                 continueBtn.style.background = 'linear-gradient(135deg, #00c853, #64dd17)';
                 continueBtn.style.color = 'white';
@@ -247,11 +252,19 @@
                     <i class="fas fa-rocket"></i>
                     متابعة كـ ${userName}
                 `;
-                continueBtn.onclick = function() {
-                    window.location.href = '3_editor.html';
-                };
                 
                 authButtons.prepend(continueBtn);
+            }
+            
+            // إذا كان زائراً سابقاً، إظهار تنبيه
+            if (userType === 'guest') {
+                const guestNotice = document.querySelector('.guest-notice');
+                guestNotice.innerHTML += `
+                    <div style="margin-top: 10px; padding: 10px; background: #ffebee; border-radius: 5px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <small>كانت زيارتك السابقة كزائر - الكود الذي كتبته لم يتم حفظه</small>
+                    </div>
+                `;
             }
         });
     </script>
