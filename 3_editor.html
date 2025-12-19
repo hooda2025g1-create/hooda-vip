@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>محرر JavaScript - حودا</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <style>
+        :root {
+            --primary: #1a2980;
+            --secondary: #26d0ce;
+            --success: #00c853;
+            --error: #ff3d00;
+            --warning: #ff9800;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        /* شريط حالة المستخدم */
+        .user-status-bar {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .user-badge {
+            background: var(--warning);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .status-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .status-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        /* المحتوى الرئيسي */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        @media (min-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* محرر الكود */
+        .editor-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .editor-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+        
+        .editor-title i {
+            font-size: 1.5rem;
+            color: #00ff88;
+        }
+        
+        .editor-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .code-stats {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+        
+        .editor-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        
+        .run-btn {
+            background: linear-gradient(135deg, var(--success), #00a152);
+            color: white;
+        }
+        
+        .run-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 200, 83, 0.3);
+        }
+        
+        .examples-btn {
+            background: linear-gradient(135deg, var(--primary), #0d1c5e);
+            color: white;
+        }
+        
+        .examples-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26, 41, 128, 0.3);
+        }
+        
+        .clear-btn {
+            background: linear-gradient(135deg, var(--error), #cc2e00);
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 61, 0, 0.3);
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, var(--secondary), #1ba8a6);
+            color: white;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(38, 208, 206, 0.3);
+        }
+        
+        .shortcut {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        
+        /* منطقة كتابة الكود */
+        .code-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #code-input {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 25px;
+            font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            direction: ltr;
+            tab-size: 4;
+        }
+        
+        #code-input:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+        }
+        
+        .editor-footer {
+            background: #2c3e50;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .language-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .language-badge i {
+            color: #f7df1e;
+            font-size: 1.2rem;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+        
+        .status-indicator i {
+            color: var(--success);
+            font-size: 0.8rem;
+            animation: pulse 2s infinite;
+        }
+        
+        /* منطقة النتائج */
+        .output-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .output-header {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .output-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+        
+        .output-title i {
+            font-size: 1.5rem;
+            color: #ff9800;
+        }
+        
+        .output-title h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .output-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.3);
+        }
+        
+        .clear-output-btn {
+            background: linear-gradient(135deg, var(--error), #cc2e00);
+            color: white;
+        }
+        
+        .clear-output-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 61, 0, 0.3);
+        }
+        
+        .output-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+        
+        /* رسائل النتائج */
+        .output-line {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: white;
+            border-left: 4px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        .output-line.log {
+            border-left-color: var(--success);
+        }
+        
+        .output-line.error {
+            border-left-color: var(--error);
+            background: #ffebee;
+        }
+        
+        .output-line.warning {
+            border-left-color: var(--warning);
+            background: #fff3e0;
+        }
+        
+        .output-line.info {
+            border-left-color: var(--secondary);
+            background: #e3f2fd;
+        }
+        
+        /* إحصائيات */
+        .stats-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .stats-title {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* رسائل خاصة للزائر */
+        .guest-warning {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            animation: slideInDown 0.5s ease;
+            box-shadow: 0 8px 25px rgba(255, 87, 34, 0.2);
+        }
+        
+        .guest-warning h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .guest-warning p {
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .guest-warning a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        /* أنيميشن */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .user-status-bar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+                text-align: center;
+            }
+            
+            .user-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .editor-controls, .output-controls {
+                flex-wrap: wrap;
+            }
+            
+            .control-btn {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
+            
+            .shortcut {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شريط حالة المستخدم -->
+    <div class="user-status-bar" id="userStatusBar">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <div class="user-name" id="userName">جار التحميل...</div>
+                <div class="user-badge" id="userBadge">زائر</div>
+            </div>
+        </div>
+        
+        <div class="user-actions">
+            <a href="1_index.html" class="status-btn">
+                <i class="fas fa-home"></i> الرئيسية
+            </a>
+            <button class="status-btn" onclick="showAccountInfo()">
+                <i class="fas fa-user-cog"></i> حسابي
+            </button>
+            <button class="status-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> خروج
+            </button>
+        </div>
+    </div>
+    
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- محرر الكود -->
+        <section class="editor-section">
+            <div class="editor-container">
+                <div class="editor-header">
+                    <div class="editor-title">
+                        <i class="fas fa-code"></i>
+                        <h2>محرر JavaScript</h2>
+                        <span class="code-stats" id="codeStats">0 سطر, 0 حرف</span>
+                    </div>
+                    
+                    <div class="editor-controls">
+                        <button class="control-btn run-btn" onclick="runCode()">
+                            <i class="fas fa-play"></i> تشغيل
+                            <span class="shortcut">Ctrl+Enter</span>
+                        </button>
+                        
+                        <button class="control-btn examples-btn" onclick="showExamples()">
+                            <i class="fas fa-book"></i> أمثلة
+                            <span class="shortcut">Ctrl+E</span>
+                        </button>
+                        
+                        <button class="control-btn save-btn" onclick="saveCode()" id="saveBtn">
+                            <i class="fas fa-save"></i> حفظ
+                            <span class="shortcut">Ctrl+S</span>
+                        </button>
+                        
+                        <button class="control-btn clear-btn" onclick="clearEditor()">
+                            <i class="fas fa-trash"></i> مسح
+                            <span class="shortcut">Ctrl+L</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="code-area">
+                    <textarea id="code-input" spellcheck="false" 
+                              placeholder="// اكتب كود JavaScript هنا...
+// مثال:
+console.log('مرحباً بالعالم!');
+
+function sum(a, b) {
+    return a + b;
+}
+
+console.log('مجموع 5 + 3 =', sum(5, 3));">// اكتب كود JavaScript هنا...
+// مثال:
+console.log('مرحباً بالعالم!');
+
+function sum(a, b) {
+    return a + b;
+}
+
+console.log('مجموع 5 + 3 =', sum(5, 3));</textarea>
+                </div>
+                
+                <div class="editor-footer">
+                    <div class="language-badge">
+                        <i class="fab fa-js-square"></i>
+                        <span>JavaScript ES6+</span>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <i class="fas fa-circle"></i>
+                        <span id="statusText">جاهز</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- منطقة النتائج -->
+        <section class="output-section">
+            <div class="output-container">
+                <div class="output-header">
+                    <div class="output-title">
+                        <i class="fas fa-terminal"></i>
+                        <h2>النتيجة</h2>
+                    </div>
+                    
+                    <div class="output-controls">
+                        <button class="control-btn copy-btn" onclick="copyOutput()">
+                            <i class="fas fa-copy"></i> نسخ
+                        </button>
+                        <button class="control-btn clear-output-btn" onclick="clearOutput()">
+                            <i class="fas fa-trash"></i> مسح
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="output-body" id="output">
+                    <!-- هنا ستظهر النتائج -->
+                </div>
+            </div>
+            
+            <!-- إحصائيات -->
+            <div class="stats-box">
+                <h3 class="stats-title">
+                    <i class="fas fa-chart-bar"></i>
+                    إحصائيات الجلسة
+                </h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">عدد مرات التشغيل</span>
+                        <span class="stat-value" id="runCount">0</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">عدد الأسطر</span>
+                        <span class="stat-value" id="lineCount">0</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">الوقت المستغرق</span>
+                        <span class="stat-value" id="timeSpent">0 ث</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">الحالة</span>
+                        <span class="stat-value" id="sessionStatus">نشطة</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==================== إعدادات أولية ====================
+        let runCounter = 0;
+        let startTime = Date.now();
+        let isRunning = false;
+        
+        // ==================== تحميل البيانات ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // التحقق من حالة المستخدم
+            checkUserStatus();
+            
+            // تحميل الكود المحفوظ (إذا كان مسجلاً)
+            loadSavedCode();
+            
+            // تحديث الإحصائيات
+            updateStats();
+            
+            // تحديث عداد الأسطر أثناء الكتابة
+            document.getElementById('code-input').addEventListener('input', function() {
+                updateLineCount();
+                updateSaveButton();
+            });
+            
+            // اختصارات لوحة المفاتيح
+            setupKeyboardShortcuts();
+            
+            // بدء عداد الوقت
+            setInterval(updateTimeSpent, 1000);
+        });
+        
+        // ==================== إدارة المستخدم ====================
+        function checkUserStatus() {
+            const userType = localStorage.getItem('user_type') || 'guest';
+            const userName = localStorage.getItem('user_name') || 'زائر';
+            const userPhone = localStorage.getItem('user_phone');
+            const isVerified = localStorage.getItem('user_verified') === 'true';
+            
+            // عرض معلومات المستخدم
+            document.getElementById('userName').textContent = userName;
+            
+            // تحديد البادج واللون حسب نوع المستخدم
+            const userBadge = document.getElementById('userBadge');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            if (userType === 'guest') {
+                userBadge.textContent = 'زائر';
+                userBadge.style.background = '#ff9800';
+                userAvatar.style.background = 'linear-gradient(135deg, #ff9800, #ff5722)';
+                
+                // إظهار تحذير للزائر
+                showGuestWarning();
+                
+                // تعطيل زر الحفظ للزائر
+                document.getElementById('saveBtn').disabled = true;
+                document.getElementById('saveBtn').innerHTML = '<i class="fas fa-ban"></i> غير متاح للزائر';
+                document.getElementById('saveBtn').style.opacity = '0.6';
+                document.getElementById('saveBtn').style.cursor = 'not-allowed';
+                
+            } else if (userType === 'registered') {
+                if (isVerified) {
+                    userBadge.textContent = 'مستخدم مفعّل';
+                    userBadge.style.background = '#00c853';
+                    userAvatar.style.background = 'linear-gradient(135deg, #00c853, #64dd17)';
+                } else {
+                    userBadge.textContent = 'بانتظار التفعيل';
+                    userBadge.style.background = '#ff9800';
+                    userAvatar.style.background = 'linear-gradient(135deg, #ff9800, #ff5722)';
+                }
+                
+                // تمكين زر الحفظ
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save"></i> حفظ';
+                document.getElementById('saveBtn').style.opacity = '1';
+                document.getElementById('saveBtn').style.cursor = 'pointer';
+            }
+            
+            // تحديث صورة البروفايل (إذا كان هناك صورة)
+            updateAvatar(userPhone);
+        }
+        
+        function showGuestWarning() {
+            const output = document.getElementById('output');
+            if (!output) return;
+            
+            const warning = document.createElement('div');
+            warning.className = 'guest-warning';
+            warning.innerHTML = `
+                <h3><i class="fas fa-exclamation-triangle"></i> أنت تستخدم المحرر كـ <strong>زائر</strong></h3>
+                <p>⚠️ <strong>تنبيه هام:</strong> الكود الذي تكتبه <strong>لن يتم حفظه تلقائياً</strong>.</p>
+                <p>📝 يمكنك التجربة والتنفيذ، لكن عند إغلاق المتصفح سيفقد الكود.</p>
+                <p>💾 للحفظ الدائم والوصول لكودك من أي جهاز:</p>
+                <p style="text-align: center; margin: 15px 0;">
+                    <a href="2_register.html" style="background: white; color: #ff5722; padding: 10px 25px; 
+                       border-radius: 25px; text-decoration: none; font-weight: bold; display: inline-block;">
+                       <i class="fas fa-user-plus"></i> أنشئ حساباً مجانياً
+                    </a>
+                </p>
+                <p><small>يمكنك نسخ الكود يدوياً إلى الحافظة للحفظ المؤقت</small></p>
+            `;
+            
+            output.innerHTML = '';
+            output.appendChild(warning);
+            
+            // إضافة رسالة ترحيبية بعد التحذير
+            setTimeout(() => {
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.className = 'output-line';
+                welcomeMsg.style.borderLeftColor = '#1a2980';
+                welcomeMsg.style.marginTop = '20px';
+                welcomeMsg.innerHTML = `
+                    <strong>🎉 مرحباً بك في محرر JavaScript!</strong><br>
+                    <small>اكتب كود JavaScript واضغط على زر "تشغيل" لتنفيذه.<br>
+                    جرب الأمثلة الجاهزة من زر "أمثلة".</small>
+                `;
+                output.appendChild(welcomeMsg);
+            }, 100);
+        }
+        
+        function updateAvatar(phone) {
+            // يمكنك إضافة صورة بروفايل مخصصة هنا لاحقاً
+            const avatar = document.getElementById('userAvatar');
+            if (phone && phone.startsWith('+20')) {
+                avatar.innerHTML = '<i class="fas fa-flag"></i>';
+            }
+        }
+        
+        function showAccountInfo() {
+            const userType = localStorage.getItem('user_type');
+            const userName = localStorage.getItem('user_name');
+            const userPhone = localStorage.getItem('user_phone');
+            
+            let message = `👤 الاسم: ${userName}\n`;
+            message += `🎫 النوع: ${userType === 'guest' ? 'زائر' : 'مستخدم مسجل'}\n`;
+            
+            if (userPhone) {
+                message += `📱 الرقم: ${userPhone}\n`;
+            }
+            
+            if (userType === 'guest') {
+                message += `\n⚠️ <strong>أنت تستخدم وضع الزائر</strong>\n`;
+                message += `الكود الذي تكتبه لن يتم حفظه تلقائياً.\n`;
+                message += `أنشئ حساباً للحفظ الدائم والوصول من أي جهاز.`;
+            }
+            
+            alert(message);
+        }
+        
+        function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                localStorage.removeItem('user_type');
+                localStorage.removeItem('user_name');
+                localStorage.removeItem('user_phone');
+                localStorage.removeItem('user_verified');
+                localStorage.removeItem('lastCode');
+                
+                // الانتقال للصفحة الرئيسية
+                window.location.href = '1_index.html';
+            }
+        }
+        
+        // ==================== وظائف المحرر ====================
+        function updateLineCount() {
+            const textarea = document.getElementById('code-input');
+            const lines = textarea.value.split('\n').length;
+            const chars = textarea.value.length;
+            
+            document.getElementById('codeStats').textContent = `${lines} سطر, ${chars} حرف`;
+            document.getElementById('lineCount').textContent = lines;
+        }
+        
+        function updateSaveButton() {
+            const userType = localStorage.getItem('user_type');
+            const saveBtn = document.getElementById('saveBtn');
+            
+            if (userType === 'guest') {
+                saveBtn.title = 'غير متاح للزائر - أنشئ حساباً للحفظ';
+            }
+        }
+        
+        function runCode() {
+            if (isRunning) {
+                showOutputMessage('جاري تشغيل كود آخر...', 'warning');
+                return;
+            }
+            
+            const code = document.getElementById('code-input').value.trim();
+            if (!code) {
+                showOutputMessage('اكتب بعض الكود أولاً!', 'error');
+                return;
+            }
+            
+            isRunning = true;
+            runCounter++;
+            updateStats();
+            
+            // تحديث الحالة
+            document.getElementById('statusText').textContent = 'جاري التشغيل...';
+            document.getElementById('statusText').style.color = '#ff9800';
+            
+            // عرض مؤشر التحميل
+            showOutputMessage('جاري تنفيذ الكود...', 'info');
+            
+            try {
+                // حفظ console.log الأصلي
+                const originalLog = console.log;
+                const originalError = console.error;
+                const originalWarn = console.warn;
+                const originalInfo = console.info;
+                
+                // تجميع النتائج
+                const logs = [];
+                const errors = [];
+                const warnings = [];
+                const infos = [];
+                
+                // توجيه console.log إلى مصفوفة النتائج
+                console.log = function(...args) {
+                    logs.push({ type: 'log', args, time: new Date() });
+                    originalLog.apply(console, args);
+                };
+                
+                console.error = function(...args) {
+                    errors.push({ type: 'error', args, time: new Date() });
+                    originalError.apply(console, args);
+                };
+                
+                console.warn = function(...args) {
+                    warnings.push({ type: 'warn', args, time: new Date() });
+                    originalWarn.apply(console, args);
+                };
+                
+                console.info = function(...args) {
+                    infos.push({ type: 'info', args, time: new Date() });
+                    originalInfo.apply(console, args);
+                };
+                
+                // تنفيذ الكود
+                const result = eval(code);
+                
+                // استعادة console.log الأصلي
+                console.log = originalLog;
+                console.error = originalError;
+                console.warn = originalWarn;
+                console.info = originalInfo;
+                
+                // عرض النتائج
+                displayResults(logs, errors, warnings, infos, result);
+                
+                // تحديث الحالة
+                document.getElementById('statusText').textContent = 'جاهز';
+                document.getElementById('statusText').style.color = '#00c853';
+                
+            } catch (error) {
+                // في حالة حدوث خطأ
+                displayError(error);
+                
+                // تحديث الحالة
+                document.getElementById('statusText').textContent = 'حدث خطأ';
+                document.getElementById('statusText').style.color = '#ff3d00';
+            } finally {
+                isRunning = false;
+            }
+        }
+        
+        function displayResults(logs, errors, warnings, infos, result) {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            // إظهار عدد النتائج
+            const totalOutputs = logs.length + errors.length + warnings.length + infos.length;
+            
+            if (totalOutputs === 0) {
+                showOutputMessage('تم التنفيذ ولكن لا يوجد إخراج. استخدم console.log() لعرض النتائج.', 'info');
+                return;
+            }
+            
+            // عرض logs
+            if (logs.length > 0) {
+                const logHeader = document.createElement('div');
+                logHeader.className = 'output-line log';
+                logHeader.innerHTML = `<strong>✅ الإخراج (${logs.length})</strong>`;
+                output.appendChild(logHeader);
+                
+                logs.forEach(log => {
+                    const logLine = document.createElement('div');
+                    logLine.className = 'output-line log';
+                    logLine.textContent = log.args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    output.appendChild(logLine);
+                });
+            }
+            
+            // عرض errors
+            if (errors.length > 0) {
+                const errorHeader = document.createElement('div');
+                errorHeader.className = 'output-line error';
+                errorHeader.innerHTML = `<strong>❌ الأخطاء (${errors.length})</strong>`;
+                output.appendChild(errorHeader);
+                
+                errors.forEach(error => {
+                    const errorLine = document.createElement('div');
+                    errorLine.className = 'output-line error';
+                    errorLine.textContent = error.args.join(' ');
+                    output.appendChild(errorLine);
+                });
+            }
+            
+            // عرض warnings
+            if (warnings.length > 0) {
+                const warningHeader = document.createElement('div');
+                warningHeader.className = 'output-line warning';
+                warningHeader.innerHTML = `<strong>⚠️ تحذيرات (${warnings.length})</strong>`;
+                output.appendChild(warningHeader);
+                
+                warnings.forEach(warning => {
+                    const warningLine = document.createElement('div');
+                    warningLine.className = 'output-line warning';
+                    warningLine.textContent = warning.args.join(' ');
+                    output.appendChild(warningLine);
+                });
+            }
+            
+            // عرض infos
+            if (infos.length > 0) {
+                const infoHeader = document.createElement('div');
+                infoHeader.className = 'output-line info';
+                infoHeader.innerHTML = `<strong>ℹ️ معلومات (${infos.length})</strong>`;
+                output.appendChild(infoHeader);
+                
+                infos.forEach(info => {
+                    const infoLine = document.createElement('div');
+                    infoLine.className = 'output-line info';
+                    infoLine.textContent = info.args.join(' ');
+                    output.appendChild(infoLine);
+                });
+            }
+            
+            // عرض القيمة المعادة إذا وجدت
+            if (result !== undefined) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'output-line';
+                resultDiv.style.borderLeftColor = '#9b59b6';
+                resultDiv.innerHTML = `<strong>↪ القيمة المعادة:</strong> ${formatResult(result)}`;
+                output.appendChild(resultDiv);
+            }
+        }
+        
+        function displayError(error) {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'output-line error';
+            errorDiv.innerHTML = `
+                <strong>❌ خطأ في التنفيذ:</strong><br>
+                ${error.name}: ${error.message}
+            `;
+            output.appendChild(errorDiv);
+            
+            // إضافة نصائح لحل الخطأ
+            const tipsDiv = document.createElement('div');
+            tipsDiv.className = 'output-line info';
+            tipsDiv.innerHTML = `
+                <strong>💡 نصائح للحل:</strong><br>
+                • تحقق من الأقواس والنقاط المنقوطة<br>
+                • تأكد من تعريف المتغيرات قبل استخدامها<br>
+                • تحقق من أسماء الدوال والمتغيرات<br>
+                • تأكد من صيغة الكود
+            `;
+            output.appendChild(tipsDiv);
+        }
+        
+        function formatResult(result) {
+            if (result === null) return 'null';
+            if (result === undefined) return 'undefined';
+            if (typeof result === 'object') {
+                try {
+                    return JSON.stringify(result, null, 2);
+                } catch {
+                    return String(result);
+                }
+            }
+            return String(result);
+        }
+        
+        function showOutputMessage(message, type = 'info') {
+            const output = document.getElementById('output');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `output-line ${type}`;
+            msgDiv.textContent = message;
+            output.appendChild(msgDiv);
+        }
+        
+        function saveCode() {
+            const userType = localStorage.getItem('user_type');
+            const codeInput = document.getElementById('code-input');
+            
+            if (userType === 'guest') {
+                alert('❌ هذه الميزة غير متاحة للزائر.\n\nأنشئ حساباً مجانياً لحفظ كودك والوصول إليه من أي جهاز.');
+                return;
+            }
+            
+            if (!codeInput) return;
+            
+            const code = codeInput.value.trim();
+            if (!code) {
+                alert('اكتب بعض الكود أولاً!');
+                return;
+            }
+            
+            try {
+                localStorage.setItem('lastCode', code);
+                showOutputMessage('✅ تم حفظ الكود بنجاح!', 'success');
+                
+                // يمكنك هنا إضافة حفظ في Supabase أيضاً
+                // saveToSupabase(code);
+                
+            } catch (e) {
+                console.warn('تعذر حفظ الكود:', e);
+                showOutputMessage('❌ تعذر حفظ الكود', 'error');
+            }
+        }
+        
+        function loadSavedCode() {
+            const userType = localStorage.getItem('user_type');
+            const codeInput = document.getElementById('code-input');
+            
+            if (userType !== 'guest') {
+                try {
+                    const savedCode = localStorage.getItem('lastCode');
+                    if (savedCode && codeInput) {
+                        codeInput.value = savedCode;
+                        updateLineCount();
+                    }
+                } catch (e) {
+                    console.warn('تعذر تحميل الكود المحفوظ:', e);
+                }
+            }
+        }
+        
+        function clearEditor() {
+            if (confirm('هل تريد مسح كل الكود من المحرر؟')) {
+                document.getElementById('code-input').value = '';
+                updateLineCount();
+                showOutputMessage('🗑️ تم مسح المحرر', 'info');
+            }
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        function copyOutput() {
+            const output = document.getElementById('output');
+            const text = output.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showOutputMessage('📋 تم نسخ النتائج إلى الحافظة', 'success');
+            }).catch(err => {
+                showOutputMessage('❌ تعذر نسخ النتائج', 'error');
+            });
+        }
+        
+        function showExamples() {
+            const examples = [
+                {
+                    title: "مثال بسيط",
+                    code: `console.log('مرحباً بالعالم!');
+console.log(5 + 3);
+console.log('النتيجة:', 10 * 2);`
+                },
+                {
+                    title: "دوال",
+                    code: `function greet(name) {
+    return 'مرحباً ' + name;
+}
+
+console.log(greet('أحمد'));
+console.log(greet('سارة'));
+
+// دالة السهم
+const sum = (a, b) => a + b;
+console.log('مجموع 10 + 5 =', sum(10, 5));`
+                },
+                {
+                    title: "مصفوفات",
+                    code: `let fruits = ['تفاح', 'موز', 'برتقال'];
+console.log('المصفوفة:', fruits);
+console.log('العنصر الأول:', fruits[0]);
+console.log('عدد العناصر:', fruits.length);
+
+// إضافة عنصر جديد
+fruits.push('فراولة');
+console.log('بعد الإضافة:', fruits);`
+                },
+                {
+                    title: "حلقات",
+                    code: `console.log('الأرقام من 1 إلى 5:');
+for(let i = 1; i <= 5; i++) {
+    console.log(i);
+}
+
+// المصفوفات مع الحلقات
+let numbers = [10, 20, 30, 40, 50];
+let sum = 0;
+
+for(let num of numbers) {
+    sum += num;
+}
+
+console.log('مجموع المصفوفة:', sum);`
+                }
+            ];
+            
+            let message = "📚 أمثلة جاهزة:\n\n";
+            examples.forEach((example, index) => {
+                message += `${index + 1}. ${example.title}\n`;
+            });
+            
+            message += "\nاختر رقم المثال:";
+            const choice = prompt(message);
+            const index = parseInt(choice) - 1;
+            
+            if (index >= 0 && index < examples.length) {
+                document.getElementById('code-input').value = examples[index].code;
+                updateLineCount();
+                showOutputMessage(`📝 تم تحميل مثال: ${examples[index].title}`, 'success');
+            }
+        }
+        
+        // ==================== الإحصائيات ====================
+        function updateStats() {
+            document.getElementById('runCount').textContent = runCounter;
+            updateTimeSpent();
+        }
+        
+        function updateTimeSpent() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            if (minutes > 0) {
+                document.getElementById('timeSpent').textContent = `${minutes} د ${seconds} ث`;
+            } else {
+                document.getElementById('timeSpent').textContent = `${seconds} ث`;
+            }
+        }
+        
+        // ==================== اختصارات لوحة المفاتيح ====================
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Enter لتشغيل الكود
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    runCode();
+                }
+                
+                // Ctrl+S للحفظ
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    saveCode();
+                }
+                
+                // Ctrl+E للأمثلة
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                    e.preventDefault();
+                    showExamples();
+                }
+                
+                // Ctrl+L لمسح المحرر
+                if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                    e.preventDefault();
+                    clearEditor();
+                }
+            });
+        }
+        
+        // ==================== تهيئة أولية ====================
+        updateLineCount();
+    </script>
+</body>
+</html>

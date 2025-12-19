@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشغل JavaScript</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<script>
+// التحقق من صلاحية الدخول
+document.addEventListener('DOMContentLoaded', function() {
+    const userType = localStorage.getItem('user_type');
+    
+    // إذا لم يكن هناك نوع مستخدم، ارجع للصفحة الرئيسية
+    if (!userType) {
+        setTimeout(() => {
+            window.location.href = '1_index.html';
+        }, 100);
+        document.body.innerHTML = '<div style="text-align:center; padding:100px; font-size:1.5rem;">جاري التحويل إلى صفحة التسجيل...</div>';
+        return;
+    }
+    
+    // إذا كان مسجلاً، عرض رسالة ترحيب
+    if (userType === 'registered') {
+        const userName = localStorage.getItem('user_name');
+        if (userName) {
+            console.log(`مرحباً ${userName}!`);
+        }
+    }
+    
+    // إذا كان زائراً، عرض إشعار
+    if (userType === 'guest') {
+        console.log('مرحباً كزائر! يمكنك التجربة ولكن لن يتم حفظ كودك.');
+    }
+    
+    // استمر في تحميل بقية الموقع
+});
+</script>
+
+<body>
+    <!-- شاشة الترحيب -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <div class="welcome-logo">
+                <i class="fas fa-code"></i>
+            </div>
+            
+            <div class="name-container">
+                <h1 class="welcome-name">حودا</h1>
+                <p class="welcome-subtitle">مشغل JavaScript المتطور</p>
+            </div>
+            
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر الوضع الداكن -->
+    <div class="theme-toggle-container">
+        <button id="themeToggle" class="theme-toggle-btn">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+            <span class="theme-ball"></span>
+        </button>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-container" id="mainContent">
+        <!-- الهيدر -->
+        <header class="main-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <i class="fas fa-code header-icon"></i>
+                    <h1>مشغل JavaScript المتطور</h1>
+                    <span class="version-badge">v2.0</span>
+                </div>
+                
+                <div class="header-info">
+                    <div class="developer-card">
+                        <div class="dev-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="dev-info">
+                            <h3>محمود أحمد سعيد</h3>
+                            <p>مطور الواجهة الأمامية</p>
+                        </div>
+                    </div>
+                    
+                    <div class="idea-creator">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>
+                            <strong>صاحبة الفكرة:</strong>
+                            <p>سلمي سيد سخيل</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-showcase">
+                    <h3><i class="fas fa-users"></i> فريق العمل</h3>
+                    <div class="team-list">
+                        <div class="team-item">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>يمني علاء</span>
+                            <small>عضو فريق</small>
+                        </div>
+                        <div class="team-item">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>شهد شوقي</span>
+                            <small>عضو فريق</small>
+                        </div>
+                        <div class="team-item">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>بتول جورج</span>
+                            <small>عضو فريق</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content">
+            <!-- محرر الكود -->
+            <section class="code-editor-section">
+                <div class="editor-container">
+                    <div class="editor-header">
+                        <div class="editor-title">
+                            <h2><i class="fas fa-edit"></i> محرر الكود</h2>
+                            <span class="code-stats" id="codeStats">0 سطر, 0 حرف</span>
+                        </div>
+                        
+                        <div class="editor-controls">
+                            <button class="control-btn run-btn" onclick="runCode()">
+                                <i class="fas fa-play"></i> تشغيل الكود
+                                <span class="shortcut">Ctrl+Enter</span>
+                            </button>
+                            
+                            <button class="control-btn examples-btn" onclick="openExamplesModal()">
+                                <i class="fas fa-code"></i> أمثلة
+                                <span class="shortcut">Ctrl+E</span>
+                            </button>
+                            
+                            <button class="control-btn save-btn" onclick="saveCurrentCode()">
+                                <i class="fas fa-save"></i> حفظ
+                                <span class="shortcut">Ctrl+S</span>
+                            </button>
+                            
+                            <button class="control-btn clear-btn" onclick="clearCode()">
+                                <i class="fas fa-redo"></i> مسح
+                                <span class="shortcut">Ctrl+L</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-body">
+                        <textarea id="code-input" spellcheck="false" placeholder="اكتب كود JavaScript هنا...">// جرب أي كود JavaScript
+console.log(5 + 5); // سيطبع 10
+
+// يمكنك تجربة:
+// 1. العمليات الحسابية
+console.log(10 * 2); // 20
+
+// 2. الدوال
+function greet(name) {
+    return "مرحباً " + name;
+}
+console.log(greet("محمود"));
+
+// 3. المصفوفات
+let numbers = [1, 2, 3, 4, 5];
+console.log("مجموع المصفوفة:", numbers.reduce((a, b) => a + b, 0));
+
+// 4. الشروط
+let age = 20;
+if (age >= 18) {
+    console.log("يمكنك التصويت");
+} else {
+    console.log("لا يمكنك التصويت");
+}</textarea>
+                    </div>
+                    
+                    <div class="editor-footer">
+                        <div class="language-badge">
+                            <i class="fab fa-js-square"></i>
+                            <span>JavaScript ES6+</span>
+                        </div>
+                        
+                        <div class="status-indicator">
+                            <i class="fas fa-circle"></i>
+                            <span id="status">جاهز</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- منطقة النتيجة -->
+            <section class="output-section">
+                <div class="output-container">
+                    <div class="output-header">
+                        <div class="output-title">
+                            <i class="fas fa-terminal"></i>
+                            <h2>النتيجة</h2>
+                        </div>
+                        
+                        <div class="output-controls">
+                            <button class="control-btn copy-btn" onclick="copyOutput()">
+                                <i class="fas fa-copy"></i> نسخ
+                            </button>
+                            <button class="control-btn clear-output-btn" onclick="clearOutput()">
+                                <i class="fas fa-trash"></i> مسح
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="output-body">
+                        <div id="output">
+                            <div class="welcome-message">
+                                <div class="message-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="message-content">
+                                    <h3>مرحباً في مشغل JavaScript! 👋</h3>
+                                    <p>اكتب كود JavaScript في المحرر على اليسار واضغط على زر "تشغيل الكود" لتنفيذه.</p>
+                                    <p>يمكنك استخدام مكتبة الأمثلة لتحميل أمثلة جاهزة.</p>
+                                    <div class="tip">
+                                        <strong>💡 نصيحة:</strong> اضغط Ctrl+Enter لتشغيل الكود بسرعة
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="quick-examples">
+                                <h4><i class="fas fa-bolt"></i> أمثلة سريعة</h4>
+                                <div class="examples-grid">
+                                    <div class="example-item" onclick="loadQuickExample('calc')">
+                                        <i class="fas fa-calculator"></i>
+                                        <span>حساب</span>
+                                    </div>
+                                    <div class="example-item" onclick="loadQuickExample('loop')">
+                                        <i class="fas fa-sync-alt"></i>
+                                        <span>حلقات</span>
+                                    </div>
+                                    <div class="example-item" onclick="loadQuickExample('array')">
+                                        <i class="fas fa-list"></i>
+                                        <span>مصفوفات</span>
+                                    </div>
+                                    <div class="example-item" onclick="loadQuickExample('function')">
+                                        <i class="fas fa-function"></i>
+                                        <span>دوال</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="features-showcase">
+                                <h4><i class="fas fa-star"></i> ميزات المشغل</h4>
+                                <div class="features-list">
+                                    <div class="feature">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>تشغيل مباشر للكود</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>عرض النتائج فوراً</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>وضع فاتح/داكن</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>أمثلة تفاعلية</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>حفظ الكود تلقائياً</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- الفوتر -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-info-circle"></i> عن المشروع</h3>
+                    <p>مشغل JavaScript المتطور هو أداة تتيح لك كتابة وتنفيذ كود JavaScript مباشرة في المتصفح.</p>
+                    <p>تم تطويره لمساعدة المبرمجين والمبتدئين في تعلم وتجربة JavaScript.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3><i class="fas fa-users"></i> فريق التطوير</h3>
+                    <ul class="team-credits">
+                        <li>محمود أحمد سعيد - المطور الرئيسي</li>
+                        <li>سلمي سيد سخيل - صاحبة الفكرة</li>
+                        <li>يمني علاء - عضو</li>
+                        <li>شهد شوقي - عضو</li>
+                        <li>بتول جورج - عضو</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3><i class="fas fa-mobile-alt"></i> المنصات المدعومة</h3>
+                    <div class="platforms">
+                        <div class="platform">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>الهواتف</span>
+                        </div>
+                        <div class="platform">
+                            <i class="fas fa-tablet-alt"></i>
+                            <span>التابلت</span>
+                        </div>
+                        <div class="platform">
+                            <i class="fas fa-desktop"></i>
+                            <span>الكمبيوتر</span>
+                        </div>
+                    </div>
+                    <p>يعمل على جميع المتصفحات الحديثة</p>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2026 مشغل JavaScript المتطور - جميع الحقوق محفوظة</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- نافذة الأمثلة -->
+    <div id="examplesModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2><i class="fas fa-code"></i> مكتبة الأمثلة التفاعلية</h2>
+                <p class="modal-subtitle">اختر مثالاً لتجربته في المحرر</p>
+                <button class="modal-close" onclick="closeExamplesModal()">&times;</button>
+            </div>
+            
+            <div class="modal-filters">
+                <div class="filter-group">
+                    <span class="filter-label">المستوى:</span>
+                    <button class="filter-btn active" data-filter="all">الكل</button>
+                    <button class="filter-btn" data-filter="beginner">مبتدئ</button>
+                    <button class="filter-btn" data-filter="intermediate">متوسط</button>
+                    <button class="filter-btn" data-filter="advanced">متقدم</button>
+                </div>
+                
+                <div class="search-box">
+                    <input type="text" id="exampleSearch" placeholder="بحث في الأمثلة...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            
+            <div class="modal-body" id="examplesContainer">
+                <!-- الأمثلة ستظهر هنا عبر JavaScript -->
+            </div>
+            
+            <div class="modal-footer">
+                <div class="modal-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>انقر على أي مثال لتحميله في المحرر</span>
+                </div>
+                <button class="random-example-btn" onclick="loadRandomExample()">
+                    <i class="fas fa-random"></i> مثال عشوائي
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
