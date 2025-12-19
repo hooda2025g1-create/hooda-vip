@@ -588,7 +588,7 @@ function initializeWelcomeScreen() {
         localStorage.setItem('hasVisitedBefore', 'true');
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 5500); // زيادة المدة من 3000 إلى 4000
+        }, 4000); // زيادة المدة من 3000 إلى 4000
     }
     
     // إضافة تأثيرات تفاعلية إضافية
