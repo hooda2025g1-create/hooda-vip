@@ -582,13 +582,13 @@ function initializeWelcomeScreen() {
         // إذا زار من قبل، تظهر الشاشة لفترة قصيرة فقط
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 5000);
+        }, 1500);
     } else {
         // أول زيارة، تظهر لفترة أطول
         localStorage.setItem('hasVisitedBefore', 'true');
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 7000);
+        }, 3000);
     }
     
     // إضافة تأثيرات تفاعلية إضافية
