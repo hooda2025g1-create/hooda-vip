@@ -591,7 +591,7 @@ function initializeWelcomeScreen() {
         localStorage.setItem('hasVisitedBefore', 'true');
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 5500 + mobileDelay); // إضافة التأخير للجوال
+        }, 4000 + mobileDelay); // إضافة التأخير للجوال
     }
     
     // إضافة تأثيرات تفاعلية إضافية
