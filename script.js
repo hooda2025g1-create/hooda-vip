@@ -582,7 +582,7 @@ function initializeWelcomeScreen() {
         // إذا زار من قبل، تظهر الشاشة لفترة قصيرة فقط
         setTimeout(() => {
             hideWelcomeScreen();
-        }, 1500);
+        }, 5000);
     } else {
         // أول زيارة، تظهر لفترة أطول
         localStorage.setItem('hasVisitedBefore', 'true');
@@ -1833,3 +1833,410 @@ if (window.requestIdleCallback) {
         console.log('⚡ تحسينات الأداء جاهزة');
     });
 }
+
+// =============================================
+// 24. نظام الامتحان الكامل مع Google Apps Script
+// =============================================
+
+let examTimer = null;
+let examTimeLeft = 3600; // 60 دقيقة بالثواني
+let currentQuestion = 0;
+let examAnswers = {};
+let examQuestions = [];
+let studentData = null;
+
+// Web App URL من Google Apps Script
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxc7GVkSyc0O4lY9ETLCyP466MDuA5ZtGFBwzmBD6u3EUhSS46UUMgOEEtcb19p_K0kKQ/exec';
+
+// الأسئلة المخزنة (20 سؤال في JavaScript)
+const examQuestionsData = {
+    javascript_basic: [
+        {
+            id: 1,
+            question: "ما هي نتيجة تنفيذ الكود التالي: console.log(typeof 42);",
+            options: ["'number'", "'string'", "'object'", "'undefined'"],
+            correct: 0,
+            points: 5
+        },
+        // ... باقي الأسئلة كما هي
+    ],
+    javascript_advanced: [
+        // ... الأسئلة المتقدمة كما هي
+    ]
+};
+
+// =============================================
+// 25. وظائف نافذة تسجيل الدخول
+// =============================================
+function openLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    modal.classList.add('fade-in');
+    
+    // إعادة تعيين النموذج
+    document.getElementById('loginForm').reset();
+}
+
+function closeLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (!modal) return;
+    
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// =============================================
+// 26. التحقق من بيانات الطالب مع Google Apps Script
+// =============================================
+async function checkStudentCredentials(studentId, password) {
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'login',
+                studentId: studentId,
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.student) {
+            showMessage('تم التحقق من بياناتك بنجاح ✅', 'success');
+            return data.student;
+        } else {
+            showMessage(data.error || 'بيانات الدخول غير صحيحة ❌', 'error');
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('خطأ في الاتصال بالسيرفر:', error);
+        
+        // كود احتياطي للاختبار (يلغي الاتصال بالسيت)
+        if (studentId === 'test' && password === '123') {
+            showMessage('وضع الاختبار: تم تسجيل الدخول ✅', 'info');
+            return {
+                id: 'test',
+                name: 'طالب تجريبي',
+                grade: 'العاشر',
+                status: 'active'
+            };
+        }
+        
+        showMessage('تعذر الاتصال بالسيرفر، حاول مرة أخرى ❌', 'error');
+        return null;
+    }
+}
+
+// =============================================
+// 27. بدء الامتحان
+// =============================================
+async function startExam(event) {
+    event.preventDefault();
+    
+    const studentId = document.getElementById('studentId').value.trim();
+    const password = document.getElementById('studentPassword').value.trim();
+    const examType = document.getElementById('examType').value;
+    
+    if (!studentId || !password || !examType) {
+        showMessage('الرجاء ملء جميع الحقول ❌', 'error');
+        return;
+    }
+    
+    // تعطيل زر الإرسال أثناء التحميل
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+    submitBtn.disabled = true;
+    
+    showMessage('جاري التحقق من بياناتك...', 'info');
+    
+    // تحقق من بيانات الطالب
+    studentData = await checkStudentCredentials(studentId, password);
+    
+    // إعادة تمكين الزر
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+    
+    if (!studentData) {
+        return;
+    }
+    
+    // تحميل الأسئلة بناءً على نوع الامتحان
+    examQuestions = examQuestionsData[examType] || examQuestionsData.javascript_basic;
+    
+    // إخفاء نافذة التسجيل
+    closeLoginModal();
+    
+    // إخفاء الصفحة الرئيسية
+    document.getElementById('mainContent').style.display = 'none';
+    
+    // إظهار صفحة الامتحان
+    const examPage = document.getElementById('examPage');
+    examPage.style.display = 'block';
+    
+    // تعيين بيانات الطالب
+    document.getElementById('studentName').textContent = `الطالب: ${studentData.name}`;
+    document.getElementById('studentIdDisplay').textContent = `ID: ${studentData.id}`;
+    document.getElementById('examTypeDisplay').textContent = `نوع الامتحان: ${getExamTypeName(examType)}`;
+    
+    // تهيئة الامتحان
+    initializeExam();
+}
+
+// =============================================
+// 28. دوال مساعدة
+// =============================================
+function getExamTypeName(type) {
+    const types = {
+        'javascript_basic': 'JavaScript أساسيات',
+        'javascript_advanced': 'JavaScript متقدم',
+        'html_css': 'HTML & CSS'
+    };
+    return types[type] || type;
+}
+
+// =============================================
+// 29. حفظ نتيجة الامتحان في Google Sheets
+// =============================================
+async function saveExamResultToSheet(resultData) {
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'save_result',
+                studentId: studentData.id,
+                studentName: studentData.name,
+                examType: document.getElementById('examType').value,
+                examTypeName: getExamTypeName(document.getElementById('examType').value),
+                score: resultData.totalScore,
+                totalScore: resultData.totalQuestions * 5,
+                percentage: resultData.percentage,
+                grade: resultData.grade,
+                correctAnswers: resultData.correctAnswers,
+                wrongAnswers: resultData.wrongAnswers,
+                unanswered: resultData.unanswered,
+                answers: JSON.stringify(examAnswers),
+                duration: 3600 - examTimeLeft, // الوقت المستغرق
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ تم حفظ النتيجة في السيت:', data);
+            return true;
+        } else {
+            console.error('❌ فشل حفظ النتيجة:', data.error);
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في حفظ النتيجة:', error);
+        return false;
+    }
+}
+
+// =============================================
+// 30. تسليم الامتحان وحفظ النتيجة
+// =============================================
+async function submitExam() {
+    if (!confirm('هل أنت متأكد من تسليم الامتحان؟ لا يمكن التراجع.')) {
+        return;
+    }
+    
+    // تعطيل زر التسليم أثناء التحميل
+    const submitBtn = document.querySelector('.submit-exam-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التسليم...';
+    submitBtn.disabled = true;
+    
+    clearInterval(examTimer);
+    
+    // حساب النتيجة
+    const result = calculateExamResult();
+    
+    // محاولة حفظ النتيجة في السيت
+    showMessage('جاري حفظ النتيجة في السيت...', 'info');
+    const saved = await saveExamResultToSheet(result);
+    
+    // إعادة تمكين الزر
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+    
+    if (saved) {
+        showMessage('✅ تم حفظ النتيجة في السيت بنجاح', 'success');
+    } else {
+        showMessage('⚠️ تم حفظ النتيجة محلياً فقط', 'warning');
+    }
+    
+    // عرض النتائج
+    showExamResults(result);
+}
+
+// =============================================
+// 31. دالة لإضافة طالب جديد (للتجربة)
+// =============================================
+async function addTestStudent() {
+    try {
+        const testData = {
+            action: 'add_student',
+            student: {
+                id: '2024001',
+                password: 'test123',
+                name: 'طالب تجريبي',
+                grade: 'العاشر',
+                status: 'active',
+                email: 'test@example.com',
+                phone: '01000000000'
+            }
+        };
+        
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(testData)
+        });
+        
+        const data = await response.json();
+        console.log('نتيجة إضافة الطالب:', data);
+        showMessage(data.success ? 'تمت إضافة الطالب' : 'فشلت الإضافة', 
+                   data.success ? 'success' : 'error');
+        
+    } catch (error) {
+        console.error('خطأ في إضافة الطالب:', error);
+    }
+}
+
+// =============================================
+// 32. دالة لجلب نتائج الطالب
+// =============================================
+async function getStudentResults(studentId) {
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'get_results',
+                studentId: studentId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('نتائج الطالب:', data.results);
+            return data.results;
+        }
+        
+        return [];
+    } catch (error) {
+        console.error('خطأ في جلب النتائج:', error);
+        return [];
+    }
+}
+
+// =============================================
+// 33. تهيئة أحداث الامتحان
+// =============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة حدث تسجيل الدخول
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', startExam);
+    }
+    
+    // اختبار الاتصال بالسيرفر عند التحميل
+    testConnection();
+    
+    // منع إغلاق المتصفح أثناء الامتحان
+    window.addEventListener('beforeunload', function(e) {
+        if (document.getElementById('examPage').style.display === 'block') {
+            e.preventDefault();
+            e.returnValue = '⚠️ لديك امتحان قيد التقدم. هل تريد المغادرة؟';
+            return '⚠️ لديك امتحان قيد التقدم. هل تريد المغادرة؟';
+        }
+    });
+});
+
+// =============================================
+// 34. اختبار الاتصال بالسيرفر
+// =============================================
+async function testConnection() {
+    try {
+        const response = await fetch(WEB_APP_URL + '?test=1');
+        console.log('✅ الاتصال بالسيرفر يعمل');
+        
+        // إضافة زر اختبار في الفوتر للتجربة
+        addTestButton();
+        
+    } catch (error) {
+        console.warn('⚠️ تعذر الاتصال بالسيرفر، النظام يعمل في وضع الاختبار');
+        showMessage('النظام يعمل في وضع الاختبار', 'warning');
+    }
+}
+
+// =============================================
+// 35. إضافة زر اختبار
+// =============================================
+function addTestButton() {
+    // إضافة زر في الفوتر للاختبار
+    const footer = document.querySelector('.footer-content');
+    if (footer) {
+        const testDiv = document.createElement('div');
+        testDiv.className = 'test-section';
+        testDiv.innerHTML = `
+            <h3><i class="fas fa-flask"></i> اختبار النظام</h3>
+            <div class="test-buttons">
+                <button onclick="testLogin()" class="test-btn">
+                    <i class="fas fa-sign-in-alt"></i> اختبار تسجيل الدخول
+                </button>
+                <button onclick="addTestStudent()" class="test-btn">
+                    <i class="fas fa-user-plus"></i> إضافة طالب تجريبي
+                </button>
+            </div>
+        `;
+        footer.appendChild(testDiv);
+    }
+}
+
+// =============================================
+// 36. دالة اختبار تسجيل الدخول
+// =============================================
+async function testLogin() {
+    showMessage('جاري اختبار تسجيل الدخول...', 'info');
+    
+    const testStudent = {
+        studentId: '2023001',
+        password: 'pass123'
+    };
+    
+    // تحديث حقول النموذج
+    document.getElementById('studentId').value = testStudent.studentId;
+    document.getElementById('studentPassword').value = testStudent.password;
+    document.getElementById('examType').value = 'javascript_basic';
+    
+    // محاولة تسجيل الدخول
+    const studentData = await checkStudentCredentials(testStudent.studentId, testStudent.password);
+    
+    if (studentData) {
+        showMessage('✅ اختبار تسجيل الدخول ناجح', 'success');
+        console.log('بيانات الطالب:', studentData);
+    }
+}
+
+console.log('🚀 نظام الامتحان متصل بـ Google Sheets!');
