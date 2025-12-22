@@ -6,6 +6,92 @@ let executionTimeout = null;
 let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 // =============================================
+// تحسينات للأجهزة المحمولة
+// =============================================
+
+// كشف نوع الجهاز
+const deviceInfo = {
+    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+    isTablet: /iPad|Android(?!.*Mobile)/i.test(navigator.userAgent),
+    isSmallScreen: window.innerWidth < 640,
+    isTouchSupported: isTouchDevice,
+    isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+    isAndroid: /Android/.test(navigator.userAgent)
+};
+
+// تحسين أداء اللمس
+function disableScaleOnInputFocus() {
+    if (deviceInfo.isMobile || deviceInfo.isTablet) {
+        // منع التكبير عند التركيز على الـ input
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                // تأخير صغير قبل التمرير الى الـ viewport
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            });
+        });
+    }
+}
+
+// إعداد لوحة المفاتيح الجوالة
+function setupMobileKeyboard() {
+    if (!isTouchDevice) return;
+    
+    const codeInput = document.getElementById('code-input');
+    if (codeInput) {
+        // تحسين تجربة الكتابة على الجوال
+        codeInput.addEventListener('focus', function() {
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+        
+        codeInput.addEventListener('blur', function() {
+            document.body.style.overflow = '';
+        });
+    }
+}
+
+// تحسين الأداء للأجهزة بطيئة
+function optimizePerformance() {
+    // تعطيل الحركات الثقيلة على الأجهزة الضعيفة
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) {
+        document.documentElement.style.setProperty('--transition-fast', '0ms');
+        document.documentElement.style.setProperty('--transition-normal', '0ms');
+        document.documentElement.style.setProperty('--transition-slow', '0ms');
+    }
+}
+
+// تحسين الرؤية للشاشات الصغيرة
+function adjustUIForSmallScreens() {
+    if (deviceInfo.isSmallScreen) {
+        // تقليل حجم الخط قليلاً
+        document.documentElement.style.fontSize = '14px';
+    }
+}
+
+// تحسين عرض الصور على الجوال
+function optimizeImages() {
+    if (deviceInfo.isMobile) {
+        // منع تحميل الصور الكبيرة على الجوال
+        const style = document.createElement('style');
+        style.textContent = `
+            @media (max-width: 640px) {
+                img {
+                    max-width: 100%;
+                    height: auto;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// =============================================
 // 2. مكتبة الأمثلة الكاملة (15 مثال)
 // =============================================
 const examplesLibrary = [
@@ -552,7 +638,14 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
         loadSavedCode();
         
-        // إضافة التحسينات الجديدة
+        // تهيئة تحسينات الجوال
+        disableScaleOnInputFocus();
+        setupMobileKeyboard();
+        optimizePerformance();
+        adjustUIForSmallScreens();
+        optimizeImages();
+        
+        // إضافة التحسينات الأخرى
         enhanceMobileModalExperience();
         setupSmoothScrolling();
         

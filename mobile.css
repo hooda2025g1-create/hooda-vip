@@ -1,0 +1,318 @@
+/* =============================================
+   تحسينات شاملة للأجهزة المحمولة
+   ============================================= */
+
+/* ====== إصلاح مشاكل الجوال الشائعة ====== */
+
+/* منع التكبير التلقائي للنصوص */
+input, textarea, select {
+    font-size: 16px !important;
+}
+
+/* تحسين التوافقية على iOS */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 8px;
+}
+
+/* إزالة الحد الافتراضي للأزرار */
+button, input[type="button"], input[type="submit"] {
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 8px;
+}
+
+/* ====== تحسين التركيز على الجوال ====== */
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ====== منع الارتجاج عند اللمس ====== */
+html {
+    -webkit-tap-highlight-color: transparent;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* ====== تحسين الكتابة على الجوال ====== */
+.mobile-optimized input[type="text"],
+.mobile-optimized input[type="password"],
+.mobile-optimized textarea {
+    font-size: 16px !important;
+    padding: 12px 15px;
+    line-height: 1.5;
+}
+
+/* ====== تحسين حجم الأزرار على الجوال ====== */
+@media (max-width: 640px) {
+    button, .btn, input[type="button"], input[type="submit"] {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+    }
+    
+    /* منطقة اللمس الآمنة */
+    a, button {
+        min-height: 48px;
+        min-width: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ====== منع الانزلاق (Scrolling) المتداخل ====== */
+.output-body, #code-input {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+}
+
+/* ====== تحسين الوضوح ====== */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ====== منع الانزلاق الأفقي ====== */
+body {
+    overflow-x: hidden;
+}
+
+/* ====== تحسين الصور ====== */
+img {
+    max-width: 100%;
+    height: auto;
+    -webkit-touch-callout: none;
+}
+
+/* ====== إزالة الحدود غير الضرورية ====== */
+@media (max-width: 640px) {
+    .modal-container,
+    .editor-container,
+    .output-container {
+        border-radius: 12px;
+    }
+    
+    .control-btn,
+    .example-item {
+        border-radius: 8px;
+    }
+}
+
+/* ====== منع الارتفاع الزائد للعناصر ====== */
+@media (max-width: 640px) {
+    .modal-container {
+        max-height: 95vh;
+    }
+    
+    .questions-container,
+    .editor-container,
+    .output-container {
+        max-height: calc(100vh - 150px);
+    }
+}
+
+/* ====== تحسين قراءة النصوص ====== */
+@media (max-width: 640px) {
+    body {
+        line-height: 1.6;
+    }
+    
+    p, span, li {
+        word-spacing: 0.05em;
+    }
+}
+
+/* ====== منع الحروف المتقطعة ====== */
+h1, h2, h3, h4, h5, h6 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* ====== تحسين الألوان على الشاشات الصغيرة ====== */
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #f9fafb;
+    }
+}
+
+/* ====== منع الانقسام على الجوال ====== */
+@media (max-width: 640px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+/* ====== تحسين التمرير في القوائم ====== */
+.modal-body, .output-body, #code-input {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ====== منع القوائم من الخروج من الشاشة ====== */
+@media (max-width: 640px) {
+    .modal-filters {
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        z-index: 10;
+    }
+}
+
+/* ====== تحسين الرؤية في الضوء الساطع ====== */
+@media (max-width: 640px) {
+    .welcome-screen {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+}
+
+/* ====== منع الأخطاء في الكتابة من اليمين لليسار ====== */
+#code-input {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+}
+
+/* ====== تحسين الأيقونات على الجوال ====== */
+@media (max-width: 640px) {
+    i {
+        font-style: normal;
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* ====== منع الارتجاج عند التمرير ====== */
+html {
+    scroll-behavior: smooth;
+    -webkit-scroll-behavior: smooth;
+}
+
+/* ====== تحسين الكنترول للأجهزة اللوحية ====== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .exam-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .exam-controls {
+        position: static;
+    }
+}
+
+/* ====== تحسينات إضافية للشاشات الصغيرة جداً ====== */
+@media (max-width: 360px) {
+    html {
+        font-size: 12px;
+    }
+    
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    
+    .main-header,
+    .main-footer {
+        padding: 15px;
+    }
+    
+    .control-btn {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+    }
+}
+
+/* ====== منع المشاكل الشائعة على Safari ====== */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 30px var(--bg-primary) inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+/* ====== تحسين الـ Viewport على الأجهزة المحمولة ====== */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        padding-top: max(16px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
+
+/* ====== تحسين الأداء ====== */
+* {
+    box-sizing: border-box;
+}
+
+.will-change {
+    will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ====== منع المزج الزائد ====== */
+.blurred {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* ====== تحسين الاستجابة اللمسية ====== */
+@media (hover: none) and (pointer: coarse) {
+    button:hover, a:hover, .control-btn:hover {
+        background-color: initial;
+        transform: none;
+    }
+    
+    button:active, a:active, .control-btn:active {
+        opacity: 0.8;
+    }
+}
+
+/* ====== منع الأخطاء في النصوص العربية ====== */
+body, html {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+}
+
+code, pre, #code-input {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+}
+
+/* ====== تحسين القراءة في الوضع الليلي ====== */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #0f172a;
+        color: #f1f5f9;
+    }
+}
