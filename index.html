@@ -13,6 +13,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="exam-mobile.css">
+    <!-- Favicon and social preview -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/favicon.svg">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="مشغل JavaScript | نظام الامتحانات">
+    <meta property="og:description" content="منصة تعليمية متقدمة لتعلم JavaScript مع محرر كود متطور وامتحانات تفاعلية">
+    <meta property="og:image" content="/og-image.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="مشغل JavaScript | نظام الامتحانات">
+    <meta name="twitter:description" content="منصة تعليمية متقدمة لتعلم JavaScript مع محرر كود متطور وامتحانات تفاعلية">
+    <meta name="twitter:image" content="/og-image.svg">
+    <link rel="image_src" href="/og-image.svg">
     <style>
         /* ====== إعدادات CSS العامة ====== */
         :root {
@@ -2086,6 +2098,8 @@
 
         /* زر الشريط الجانبي */
         .questions-toggle-btn {
+            /* مخفي على أجهزة سطح المكتب، يظهر فقط على تابلت/موبايل */
+            display: none;
             position: fixed;
             right: 18px;
             bottom: 140px;
@@ -2184,6 +2198,21 @@
                 padding: 6px 8px !important;
                 font-size: 0.85rem !important;
             }
+        }
+
+        /* إظهار زر الشريط الجانبي والتعديلات للتابلت */
+        @media (max-width: 1024px) {
+            .questions-toggle-btn { display: flex; }
+
+            /* تصغير اللوحة الجانبية على التابلت */
+            .mobile-questions-panel { width: 380px; max-width: 86%; }
+
+            /* تصغير مكونات الهيدر (الوقت/بطاقة الطالب) على التابلت */
+            body.mobile-exam .exam-header { padding: 12px 16px !important; }
+            body.mobile-exam .exam-header-content { gap: 8px !important; }
+            body.mobile-exam .exam-timer { padding: 8px 12px !important; }
+            body.mobile-exam .student-card { padding: 8px 10px !important; }
+            body.mobile-exam .exam-title h1 { font-size: 1.3rem !important; }
         }
 
         .mobile-questions-panel .question-nav-btn.answered {
